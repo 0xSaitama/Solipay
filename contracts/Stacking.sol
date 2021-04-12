@@ -1,5 +1,5 @@
-pragma solidity ^0.6.12;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.0;
+
 
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IERC20.sol";
@@ -33,14 +33,25 @@ receive() external payable { }
    require(success, "not approved");
    return abi.decode(data, (uint));
  }
+ function transferERC20(IERC20 token, uint amountIn) external {
+   IERC20(token).transferFrom(msg.sender,address(this),amountIn);
+ }
 
+ function approveERC20Uni(IERC20 token, uint amountIn) external {
+   IERC20(token).approve(address(uniswapRouter), amountIn);
+ }
   // La fonction qui va permettre le swap
- function swapTokensForEth(address token, uint amountIn, uint amountOutMin, uint deadline) external {
-   IERC20(token).transferFrom(msg.sender, address(this), amountIn);// Transfert des tokens en question au smart contract ! Il faut penser à approve ce transfert avant l’utilisation de cette fonction
+ function swapTokensForEth(
+   address token,
+   uint amountIn,
+   uint amountOutMin,
+   uint deadline
+   ) external {
+   //transferFromER20
    address[] memory path = new address[](2); // Création du path
    path[0] = address(token); // initialisation du path avec l'address du token à échanger
    path[1] = uniswapRouter.WETH(); // initialisation du path avec l'address du WETH d'Uniswap
-   IERC20(token).approve(address(uniswapRouter), amountIn); // autoriser uniswap à utiliser nos tokens
+   //approveERC20Uni
    uniswapRouter.swapExactTokensForETH(
      amountIn,
      amountOutMin,
@@ -50,8 +61,27 @@ receive() external payable { }
    ); // effectuer le swap, ETH sera transférer directement au msg.sender
  }
 
- function addLiquidityeth(address token, uint amountTokenDesired, uint amountTokenMin, uint amountETHMin, uint deadline) external payable returns (uint amountToken, uint amountETH, uint liquidity) {
-   IERC20(token).approve(address(uniswapRouter), amountTokenDesired);
-   uniswapRouter.addLiquidityETH(token, amountTokenDesired, amountTokenMin, amountETHMin, msg.sender, deadline);
+ function addLiquidity(
+   address tokenA,
+   address tokenB,
+   uint amountTokenADesired,
+   uint amountTokenBDesired,
+   uint amountTokenAMin,
+   uint amountTokenBMin,
+   uint deadline
+  ) external payable returns (uint amountTokenA, uint amountTokenB, uint liquidity) {
+   return uniswapRouter.addLiquidity(tokenA, tokenB, amountTokenADesired,amountTokenBDesired, amountTokenAMin, amountTokenBMin, msg.sender, deadline);
  }
+
+  function removeLiquidity(
+  address tokenA,
+  address tokenB,
+  uint liquidity,
+  uint amountAMin,
+  uint amountBMin,
+  address to,
+  uint deadline
+  ) external returns (uint amountA, uint amountB) {
+  return uniswapRouter.removeLiquidity(tokenA,tokenB,liquidity,amountAMin,amountBMin,to,deadline);
+  }
 }
