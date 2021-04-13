@@ -84,11 +84,11 @@ contract Loan is ProxySimple {
     /// @dev Copy the array of users to the proxy, Error with Client call in ProxySimple.sol
     /// @param _addr proxy address
     function setEntity(address _addr) public onlyOwner {
-      Client[] calldata copyTab = ProxySimple(_addr).clients;
+      Client[] memory copyTab = ProxySimple(_addr).getClients();
 
         for(uint i; i == copyTab.length; i++) {
-            votes[i] = Voter(true,false,copyTab[i]._Montant,0);
-            address voterAddr = ProxySimple(_addr).backToUser[i];
+            votes[i] = Voter(true,false,copyTab[i].amount,0);
+            address voterAddr = ProxySimple(_addr).backToUser(i); //backToUser est un getter dans ce contrat(borrow)
             voters[voterAddr] = votes[i];
         }
     }
@@ -123,7 +123,7 @@ contract Loan is ProxySimple {
 
         uint count;
         uint quorum = ProxySimple.totalVotingPower.div(2);
-        for(uint i; i = loans.lenght; i++) {
+        for(uint i; i == loans.length; i++) {
             count = loans[i].voteCount;
             if( count <= quorum){
                 loans[i].state = true;
