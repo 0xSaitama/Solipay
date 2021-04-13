@@ -97,6 +97,10 @@ using SafeMath for uint;
        totalVotingPower= totalVotingPower.sub(User[msg.sender].amount);
   }
 
+  function getClients() external view returns(Client[] memory) {
+    return clients;
+  }
+
 // Function de Retrait
 
     function Withdraw (IERC20 _address) public payable onlyOwner {
