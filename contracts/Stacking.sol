@@ -1,4 +1,4 @@
-pragma solidity 0.8.0;
+pragma solidity 0.7.4;
 
 
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
@@ -42,6 +42,7 @@ receive() external payable { }
  }
   // La fonction qui va permettre le swap
  function swapTokensForEth(
+
    address token,
    uint amountIn,
    uint amountOutMin,

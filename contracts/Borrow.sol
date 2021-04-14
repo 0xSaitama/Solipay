@@ -1,6 +1,7 @@
-pragma solidity 0.8.0;
+pragma solidity 0.7.4;
+pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@uniswap/v2-core/contracts/libraries/SafeMath.sol";
 import "./ProxySimple.sol";
 
 /// @title A contract for the management of votes
