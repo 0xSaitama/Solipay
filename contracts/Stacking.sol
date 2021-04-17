@@ -4,9 +4,13 @@ pragma solidity 0.7.4;
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@uniswap/v2-core/contracts/libraries/SafeMath.sol";
 
 
-contract Stacking {
+contract Stacking is Ownable{
+  using SafeMath for uint;
+
  IUniswapV2Router02 uniswapRouter;
 
 
@@ -17,9 +21,8 @@ contract Stacking {
 
 receive() external payable { }
 
-
- function getBalance(address token, address owner) external view returns (uint) {
-   return IERC20(token).balanceOf(owner);
+ function getBalance(address token) external view returns (uint) {
+   return IERC20(token).balanceOf(address(this));
  }
 
  function getAllowance(IERC20 token,address owner, address spender) external view returns(uint) {
@@ -27,33 +30,44 @@ receive() external payable { }
 
  }
 
- function approveStack(IERC20 token, address spender, uint value) external returns(uint)  {
+ function getAmountDcm(address token, uint amount) external view returns(uint) {
+   uint decimals = IERC20(token).decimals();
+   return amount*10**(decimals);
+ }
+
+ function getAmountMin(uint amountDesired, uint tolerance) external pure returns (uint) {
+   uint tolerated = amountDesired.mul(tolerance).div(100);
+   uint amountMin = amountDesired.sub(tolerated);
+   return amountMin;
+ }
+ function approveStack(IERC20 token, address spender, uint value) external onlyOwner returns(uint)  {
    //IERC20(token).approve(spender, value);
    (bool success, bytes memory data) = address(token).delegatecall(abi.encodeWithSignature("approve(address,uint256)",spender,value));
    require(success, "not approved");
    return abi.decode(data, (uint));
  }
- function transferERC20(IERC20 token, uint amountIn) external {
+ function transferERC20(IERC20 token, uint amountIn) onlyOwner external {
    IERC20(token).transferFrom(msg.sender,address(this),amountIn);
  }
 
- function approveERC20Uni(IERC20 token, uint amountIn) external {
+ function approveERC20Uni(IERC20 token, uint amountIn) onlyOwner external returns(uint){
    IERC20(token).approve(address(uniswapRouter), amountIn);
+   return amountIn;
  }
   // La fonction qui va permettre le swap
- function swapTokensForEth(
-
-   address token,
+ function swapTokens(
+   address tokenA,
+   address tokenB,
    uint amountIn,
    uint amountOutMin,
    uint deadline
-   ) external {
+   ) external onlyOwner {
    //transferFromER20
    address[] memory path = new address[](2); // Création du path
-   path[0] = address(token); // initialisation du path avec l'address du token à échanger
-   path[1] = uniswapRouter.WETH(); // initialisation du path avec l'address du WETH d'Uniswap
+   path[0] = address(tokenA); // initialisation du path avec l'address du token à échanger
+   path[1] = address(tokenB); // initialisation du path avec l'address du WETH d'Uniswap
    //approveERC20Uni
-   uniswapRouter.swapExactTokensForETH(
+   uniswapRouter.swapExactTokensForTokens(
      amountIn,
      amountOutMin,
      path,
@@ -70,7 +84,7 @@ receive() external payable { }
    uint amountTokenAMin,
    uint amountTokenBMin,
    uint deadline
-  ) external payable returns (uint amountTokenA, uint amountTokenB, uint liquidity) {
+  ) external payable onlyOwner returns (uint amountTokenA, uint amountTokenB, uint liquidity) {
    return uniswapRouter.addLiquidity(tokenA, tokenB, amountTokenADesired,amountTokenBDesired, amountTokenAMin, amountTokenBMin, msg.sender, deadline);
  }
 
@@ -82,7 +96,7 @@ receive() external payable { }
   uint amountBMin,
   address to,
   uint deadline
-  ) external returns (uint amountA, uint amountB) {
+  ) external onlyOwner returns (uint amountA, uint amountB) {
   return uniswapRouter.removeLiquidity(tokenA,tokenB,liquidity,amountAMin,amountBMin,to,deadline);
   }
 }
