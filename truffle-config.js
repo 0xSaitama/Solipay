@@ -1,5 +1,5 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
-const NonceTrackerSubprovider = require("web3-provider-engine/subproviders/nonce-tracker")
+
 require('dotenv').config();
 
 module.exports = {
@@ -28,9 +28,7 @@ module.exports = {
     kovan: {
       provider: function() {
         var wallet = new HDWalletProvider(`${process.env.MNEMONIC}`, `https://kovan.infura.io/v3/${process.env.INFURA_ID}`);
-          var nonceTracker = new NonceTrackerSubprovider();
-          wallet.engine._providers.unshift(nonceTracker);
-          nonceTracker.setEngine(wallet.engine);
+
         return wallet;
       },
       network_id: 42,
@@ -46,7 +44,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.0",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.6.11",    // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {
