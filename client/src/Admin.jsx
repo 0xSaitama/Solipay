@@ -5,8 +5,13 @@ import getWeb3 from "./getWeb3";
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
+<<<<<<< HEAD
 // import {useToasts} from 'react-toast-notifications';
 // import { ChainId, Fetcher, Route, Trade, TokenAmount, TradeType, WETH } from '@uniswap/sdk'
+=======
+import {useToasts} from 'react-toast-notifications';
+import { ChainId, Fetcher, Route, Trade, TokenAmount, TradeType, WETH } from '@uniswap/sdk'
+>>>>>>> 301a359bef8be200d1344f847daa9c156776a200
 import getMessageError from './getMessageError'
 
 
@@ -180,7 +185,13 @@ function Admin({ account, setMsg }) {
         <Grid item>
           <h4>SWAP & MANAGE LIQUIDITY</h4>
         </Grid>
+<<<<<<< HEAD
        
+=======
+        <Grid item>
+        <TextField id="standard-basic" label="TokenA" onChange={async ({target}) => await setAmount(target.value).then() => convert()}/> //enchainement fonction ? async ?
+      </Grid>
+>>>>>>> 301a359bef8be200d1344f847daa9c156776a200
       <Grid item>
       <input
                 type="number"
