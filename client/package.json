@@ -7,11 +7,14 @@
     "@ethersproject/solidity": "^5.1.0",
     "@openzeppelin/contracts": "^4.0.0",
     "@truffle/hdwallet-provider": "^1.1.0",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "dotenv": "^8.2.0",
     "react": "16.11.0",
     "react-dom": "16.11.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.2.0",
+    "use-wallet": "^0.8.1",
     "web3": "1.2.2"
   },
   "scripts": {
