@@ -16,9 +16,9 @@ using SafeMath for uint;
 
     struct Client {
         bool lister;
-        uint dayLock;
-        uint amount;
-        uint depositData;
+        uint[] amounts;
+        uint[] depositData;
+        uint totalDeposit;
         uint withdrawalPending;
     }
 
@@ -33,7 +33,7 @@ using SafeMath for uint;
 
     // Taux d'interet
     uint apy = 5 ;
-
+    uint dayLock = 100 days;
     // Somme Global disponible prêt à payer
     uint totalWithdrawalAmount;
 
@@ -50,44 +50,72 @@ using SafeMath for uint;
 
 // Function déposer des fonds - parametre nombre de jours bloqué =>(nb_dayLock) et le amount
 
-    function deposite (uint nb_dayLock, uint amount)  public payable  {
-
+    function deposite (uint amount)  public payable  {
+      if (User[msg.sender].lister == true) {
+      User[msg.sender].amounts.push(amount);
+      uint depositDate = uint(block.timestamp);
+      User[msg.sender].depositData.push(depositDate);
+      totalVotingPower= totalVotingPower.add(amount);
+      } else {
     // Initialisation d'un variable à "now"
-    uint depositData = uint(block.timestamp);
+    uint depositDate = uint(block.timestamp);
 
     // Enregistrement(blockChain) dans le Tableau Client
-    Client memory _client ;
+    Client memory _client;
+    uint[] memory depositData;
+    uint[] memory amounts;
+    amounts[0] = amount;
+    depositData[0] = depositDate;
 
     // Variable _client = aux params(struct)
-    _client = Client(true, nb_dayLock, amount, depositData,0);
+    _client = Client(true, amounts, depositData,0,0);
 
     // Push les elements dans le Client[] public clients;
     clients.push(_client);
     uint Id = clients.length.sub(1);
     User[msg.sender]=clients[Id];
     backToUser[Id] = msg.sender;
+    User[msg.sender].totalDeposit = getVotingPower(msg.sender);
 
     // Validation de l'event
     emit valideDepot(msg.sender, amount);
 
     // Maj des amount de dépôt
     totalVotingPower= totalVotingPower.add(amount);
+    }
   }
-
+    function getVotingPower(address owner) internal view returns(uint) {
+      uint length = User[owner].amounts.length;
+      uint amountTotal;
+      for (uint i; i == length; i++) {
+        amountTotal = amountTotal.add(User[owner].amounts[i]);
+      }
+      return amountTotal;
+    }
 // Function demande de retrait - parametre amount souhaitant retirer
 
     function withdrawPending (uint withdrawalAmount) public payable {
+        uint minWithdrawalDate;
+        uint withdrawable;
+        uint length = User[msg.sender].depositData.length;
+        for(uint i; i == length ; i++) {
+          minWithdrawalDate = User[msg.sender].depositData[i].add(dayLock);
+          if (minWithdrawalDate < uint(block.timestamp)) {
+           withdrawable = i;
+          } else {
+            require(User[msg.sender].depositData[0].add(dayLock) <= uint(block.timestamp), "withdraw deadline is not reached");
+          }
+        }
 
-    // Verification du DayLock
-        uint minWithdrawalDate =User[msg.sender].depositData.add(User[msg.sender].dayLock);
-        require(minWithdrawalDate <= uint(block.timestamp),"deadlines for blocking funds not elapsed");
-
+        uint withdrawableTotal;
     // Calcule du amount des interets disponible + le amount de depot initial = amount Total Disponible à l'instanté
-        uint depositTime = uint(block.timestamp) - User[msg.sender].depositData;
-        uint interestAmount = ((depositTime.mul(100).div(315360000)).mul(apy).mul(User[msg.sender].amount).mul(100)).div(100);
-        uint amountTotal = User[msg.sender].amount.add(interestAmount);
-
-        require(withdrawalAmount <=  amountTotal);
+    for (uint i ; i == withdrawable ; i++) {
+        uint depositTime = uint(block.timestamp) - User[msg.sender].depositData[i];
+        uint interestAmount = ((depositTime.mul(100).div(315360000)).mul(apy).mul(User[msg.sender].amounts[i]).mul(100)).div(100);
+        uint amountTotal = User[msg.sender].amounts[i].add(interestAmount);
+        withdrawableTotal = withdrawableTotal.add(amountTotal);
+      }
+        require(withdrawalAmount <=  withdrawableTotal);
 
     // Maj du amount Global Payement
         totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawalAmount);
@@ -96,7 +124,7 @@ using SafeMath for uint;
         emit authorizedWithdrawal(msg.sender, withdrawalAmount);
 
     // Maj des amount de dépôt
-       totalVotingPower= totalVotingPower.sub(User[msg.sender].amount);
+       totalVotingPower= totalVotingPower.sub(withdrawalAmount);
   }
 
   function getClients() external view returns(Client[] memory) {

@@ -86,9 +86,8 @@ contract Loan is ProxySimple {
     /// @param _addr proxy address
     function setEntity(address _addr) public onlyOwner {
       Client[] memory copyTab = ProxySimple(_addr).getClients();
-
         for(uint i; i == copyTab.length; i++) {
-            votes[i] = Voter(true,false,copyTab[i].amount,0);
+            votes[i] = Voter(true,false,copyTab[i].totalDeposit,0);
             address voterAddr = ProxySimple(_addr).backToUser(i); //backToUser est un getter dans ce contrat(borrow)
             voters[voterAddr] = votes[i];
         }
