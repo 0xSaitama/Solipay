@@ -9,7 +9,7 @@ const getWeb3 = () =>
       //Modern dapp browsers...
       if (window.ethereum) {
         web3Instance = web3Instance || new Web3(window.ethereum);
-        // Request account access if needed
+        //Request account access if needed
         resolve(web3Instance);
         //window.ethereum.enable()
           //.then(_ => resolve(web3Instance))
