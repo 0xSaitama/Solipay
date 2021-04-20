@@ -27,18 +27,29 @@ function Public({ account, setMsg }) {
   // Function deposite => params : Nbjour & montant
   const [montant, setMontant] = useState(0);
   const [nbjour, setNbjour] = useState(0);
+
+  // CI DESSOUS function retrait en attente True/False
   //const [withdrawPending, setWithdrawPending] = useState(false);
+
+  // retrait
+  const [montantRetirer, setMontantRetirer] = useState(0);
 
   const [clients, setClients] = useState([]);
   const [activeStep, setActiveStep] = useState(0);
 
   // FONCTION VALIDATION DE PAIMENT
   const ValidePaiment = () => {
-    console.log("NOMBRE DE JOUR ",nbjour);
+    console.log("NOMBRE DE JOUR ", nbjour);
     console.log("L'OSEILE QUI A ETE MIS EN PLACE ", montant);
   };
 
-  // call function view poour voir letat de la boockchain
+  // Fonction Retrait
+  const Retrait = () => {
+    console.log("----------Retrait en cours ", setMontantRetirer);
+  };
+
+  // Rappelle les ".call" c'est juste pour voir "quand la function du contrat est en view"
+  // .Send c'est pour modifier l'etat de la function
   const deposite = async () => {
     const contract = await getContract(ProxySimple);
     console.log("ligne43-----------------", deposite);
@@ -53,33 +64,48 @@ function Public({ account, setMsg }) {
       .then(function (tx) {
         setMsg(`Deposite ${(montant, nbjour)}`);
         console.log("ligne54 ");
-        console.log("transac ligne 55",tx);
+        console.log("transac ligne 55", tx);
       });
   };
 
-// ---------------------------------------------
- // Function de retrait en attente 
-//  const withdrawPending = async () => {
-//   const contract = await getContract(ProxySimple);
-//   console.log("ligne43-----------------", withdrawPending);
-//   const web3 = await getWeb3();
-//   console.log("ligne45-----------------", web3);
-//   const depot = await contract.methods
-//     .withdrawPending(withdrawalAmount)
-//     .send({ from: account })
-//     .on("error", function (error) {
-//       setMsg("error");
-//     })
-//     .then(function (tx) {
-//       setMsg(`WithdrawPending ${(withdrawalAmount}`);
-//       console.log("ligne54 ");
-//       console.log("transac ligne 55",tx);
-//     });
-// };
+  // Function retrait
+  const Withdraw = async () => {
+    const contract = await getContract(ProxySimple);
+    console.log("-----------Ligne n° ", Withdraw);
+    const web3 = await getWeb3();
+    console.log("-----------Ligne n° ", web3);
+    const retirer = await contract.methods
+      .Withdraw(montantRetirer)
+      .send({ from: account })
+      .on("error", function (error) {
+        setMsg("error");
+      })
+      .then(function (tx) {
+        setMsg(`Retrait ${montantRetirer}`);
+        console.log("test ligne 81");
+        console.log("transaction ligne 82", tx);
+      });
+  };
 
-
-
-
+  // ---------------------------------------------
+  // Function de retrait en attente
+  //  const withdrawPending = async () => {
+  //   const contract = await getContract(ProxySimple);
+  //   console.log("ligne43-----------------", withdrawPending);
+  //   const web3 = await getWeb3();
+  //   console.log("ligne45-----------------", web3);
+  //   const depot = await contract.methods
+  //     .withdrawPending(withdrawalAmount)
+  //     .send({ from: account })
+  //     .on("error", function (error) {
+  //       setMsg("error");
+  //     })
+  //     .then(function (tx) {
+  //       setMsg(`WithdrawPending ${(withdrawalAmount}`);
+  //       console.log("ligne54 ");
+  //       console.log("transac ligne 55",tx);
+  //     });
+  // };
 
   // call function view poour voir letat de la boockchain
   // const deposite = async () => {
@@ -205,8 +231,8 @@ function Public({ account, setMsg }) {
                     label="Adresse"
                     onChange={({ target }) => setNbjour(target.value)}
                   />
-                </Grid >
-                <h4 className ="Montant" >Montant ? </h4>
+                </Grid>
+                <h4 className="Montant">Montant ? </h4>
                 <Grid item>
                   <input
                     type="number"
@@ -217,8 +243,6 @@ function Public({ account, setMsg }) {
                   />
                 </Grid>
                 <br></br>
-                <Grid> estimation du retour sur investissement </Grid>
-
                 <Grid item>
                   <Button
                     variant="contained"
@@ -226,6 +250,26 @@ function Public({ account, setMsg }) {
                     onClick={() => deposite()}
                   >
                     ValidePaiment
+                  </Button>
+                </Grid>
+                <br></br>
+                montant à retirer
+                <Grid item>
+                  <input
+                    type="number"
+                    rowsMin={6}
+                    id="standard-basic"
+                    label="Adresse"
+                    onChange={({ target }) => setMontantRetirer(target.value)}
+                  />
+                </Grid>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => Withdraw()}
+                  >
+                    Retrait
                   </Button>
                 </Grid>
                 <br></br>
