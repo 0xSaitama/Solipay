@@ -41,7 +41,7 @@ using SafeMath for uint;
 
 // Tableaux Client
 
-    Client[] public clients;
+    address[] public adrClients;
 
 // Event
 
@@ -51,39 +51,24 @@ using SafeMath for uint;
 // Function déposer des fonds - parametre nombre de jours bloqué =>(nb_dayLock) et le amount
 
     function deposite (uint amount)  public payable  {
-      if (User[msg.sender].lister == true) {
-      User[msg.sender].amounts.push(amount);
-      uint depositDate = uint(block.timestamp);
-      User[msg.sender].depositData.push(depositDate);
-      totalVotingPower= totalVotingPower.add(amount);
-      } else {
-    // Initialisation d'un variable à "now"
-    uint depositDate = uint(block.timestamp);
+        uint depositDate = uint(block.timestamp);
 
-    // Enregistrement(blockChain) dans le Tableau Client
-    Client memory _client;
-    uint[] memory depositData;
-    uint[] memory amounts;
-    amounts[0] = amount;
-    depositData[0] = depositDate;
+        User[msg.sender].amounts.push(amount);
+        User[msg.sender].depositData.push(depositDate);
+        User[msg.sender].totalDeposit = getVotingPower(msg.sender);
 
-    // Variable _client = aux params(struct)
-    _client = Client(true, amounts, depositData,0,0);
+        if (User[msg.sender].lister == false) {
+            adrClients.push(msg.sender);
+            User[msg.sender].lister = true;
+        }
 
-    // Push les elements dans le Client[] public clients;
-    clients.push(_client);
-    uint Id = clients.length.sub(1);
-    User[msg.sender]=clients[Id];
-    backToUser[Id] = msg.sender;
-    User[msg.sender].totalDeposit = getVotingPower(msg.sender);
-
-    // Validation de l'event
-    emit valideDepot(msg.sender, amount);
-
-    // Maj des amount de dépôt
-    totalVotingPower= totalVotingPower.add(amount);
-    }
+        // Validation de l'event
+        emit valideDepot(msg.sender, amount);
+        // Maj des amount de dépôt
+        totalVotingPower= totalVotingPower.add(amount);
   }
+
+
     function getVotingPower(address owner) internal view returns(uint) {
       uint length = User[owner].amounts.length;
       uint amountTotal;
@@ -127,27 +112,30 @@ using SafeMath for uint;
        totalVotingPower= totalVotingPower.sub(withdrawalAmount);
   }
 
-  function getClients() external view returns(Client[] memory) {
-    return clients;
+  function getAdrClients() external view returns(address[] memory) {
+    return adrClients;
   }
 
+  function getUser(address adr) external view returns(Client memory) {
+    return User[adr];
+  }
 // Function de Retrait
 
     function Withdraw (IERC20 _address) public payable onlyOwner {
 
     uint aPayer;
     address userRefund;
-    uint length = clients.length;
+    uint length = adrClients.length;
     // recherche de tous les clients ayant fait une demande de retrait
     for(uint i; i == length ; i++) {
-      aPayer = clients[i].withdrawalPending;
+      aPayer = User[adrClients[i]].withdrawalPending;
       userRefund = backToUser[i];
 
       IERC20(_address).transferFrom(msg.sender, userRefund, aPayer);
 
     //Maj du totalWithdrawalAmount
     totalWithdrawalAmount = totalWithdrawalAmount.sub(aPayer);
-    clients[i].withdrawalPending = 0;
+    User[adrClients[i]].withdrawalPending = 0;
     }
   }
 }
