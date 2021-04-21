@@ -30,9 +30,9 @@ receive() external payable { }
 
  }
 
- function getAmountDcm(address token, uint amount) external view returns(uint) {
+ function getDecimals(address token, uint amount) external view returns(uint) {
    uint decimals = IERC20(token).decimals();
-   return amount*10**(decimals);
+   return  decimals;
  }
 
  function getAmountMin(uint amountDesired, uint tolerance) external pure returns (uint) {

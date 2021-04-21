@@ -85,9 +85,10 @@ contract Loan is ProxySimple {
     /// @dev Copy the array of users to the proxy, Error with Client call in ProxySimple.sol
     /// @param _addr proxy address
     function setEntity(address _addr) public onlyOwner {
-      Client[] memory copyTab = ProxySimple(_addr).getClients();
+      address[] memory copyTab = ProxySimple(_addr).getAdrClients();
+
         for(uint i; i == copyTab.length; i++) {
-            votes[i] = Voter(true,false,copyTab[i].totalDeposit,0);
+            votes[i] = Voter(true,false,ProxySimple(_addr).getUser(copyTab[i]).totalDeposit,0);
             address voterAddr = ProxySimple(_addr).backToUser(i); //backToUser est un getter dans ce contrat(borrow)
             voters[voterAddr] = votes[i];
         }
