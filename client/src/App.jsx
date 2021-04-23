@@ -10,15 +10,9 @@ import Snackbar from '@material-ui/core/Snackbar';
 
 import "./App.css";
 import Admin from "./Admin";
-<<<<<<< HEAD
 import Public from "./Public";
 
 const CHAIN_ID = 42;
-=======
-
-
-const CHAIN_ID = 42; //kovan network
->>>>>>> 301a359bef8be200d1344f847daa9c156776a200
 
 function App() {
   const wallet = useWallet();
@@ -50,13 +44,9 @@ function App() {
     <div className="App">
       <Router>
         <Switch>
-<<<<<<< HEAD
           <Route exact path="/">
             <Public account={account} setMsg={setMsg} />
           </Route>
-=======
-
->>>>>>> 301a359bef8be200d1344f847daa9c156776a200
           <Route path="/admin">
             <Admin account={account} setMsg={setMsg} />
           </Route>
