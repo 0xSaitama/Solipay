@@ -11,8 +11,8 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 contract Stacking is Ownable{
   using SafeMath for uint;
 
- IUniswapV2Router02 uniswapRouter;
-
+ IUniswapV2Router02 public uniswapRouter;
+ address public stacking;
 
 
  constructor(address _uniswap) public {
@@ -21,32 +21,20 @@ contract Stacking is Ownable{
 
 receive() external payable { }
 
+function setStackingAddress(address contractAddr) external onlyOwner {
+  stacking = contractAddr ;
+}
+
  function getBalance(address token) external view returns (uint) {
    return IERC20(token).balanceOf(address(this));
  }
 
- function getAllowance(IERC20 token,address owner, address spender) external view returns(uint) {
-   return token.allowance(owner, spender);
-
- }
-
- function getDecimals(address token, uint amount) external view returns(uint) {
+ function getDecimals(address token) external view returns(uint) {
    uint decimals = IERC20(token).decimals();
    return  decimals;
  }
 
- function getAmountMin(uint amountDesired, uint tolerance) external pure returns (uint) {
-   uint tolerated = amountDesired.mul(tolerance).div(100);
-   uint amountMin = amountDesired.sub(tolerated);
-   return amountMin;
- }
- function approveStack(IERC20 token, address spender, uint value) external onlyOwner returns(uint)  {
-   //IERC20(token).approve(spender, value);
-   (bool success, bytes memory data) = address(token).delegatecall(abi.encodeWithSignature("approve(address,uint256)",spender,value));
-   require(success, "not approved");
-   return abi.decode(data, (uint));
- }
- function transferERC20(IERC20 token, uint amountIn) onlyOwner external {
+ function transferERC20(IERC20 token, uint amountIn) external onlyOwner{
    IERC20(token).transferFrom(msg.sender,address(this),amountIn);
  }
 
@@ -71,7 +59,7 @@ receive() external payable { }
      amountIn,
      amountOutMin,
      path,
-     msg.sender,
+     stacking,
      deadline
    ); // effectuer le swap, ETH sera transférer directement au msg.sender
  }
@@ -85,7 +73,7 @@ receive() external payable { }
    uint amountTokenBMin,
    uint deadline
   ) external payable onlyOwner returns (uint amountTokenA, uint amountTokenB, uint liquidity) {
-   return uniswapRouter.addLiquidity(tokenA, tokenB, amountTokenADesired,amountTokenBDesired, amountTokenAMin, amountTokenBMin, msg.sender, deadline);
+   return uniswapRouter.addLiquidity(tokenA, tokenB, amountTokenADesired,amountTokenBDesired, amountTokenAMin, amountTokenBMin, stacking, deadline);
  }
 
   function removeLiquidity(
@@ -94,9 +82,8 @@ receive() external payable { }
   uint liquidity,
   uint amountAMin,
   uint amountBMin,
-  address to,
   uint deadline
   ) external onlyOwner returns (uint amountA, uint amountB) {
-  return uniswapRouter.removeLiquidity(tokenA,tokenB,liquidity,amountAMin,amountBMin,to,deadline);
+  return uniswapRouter.removeLiquidity(tokenA,tokenB,liquidity,amountAMin,amountBMin,stacking,deadline);
   }
 }
