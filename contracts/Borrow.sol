@@ -10,6 +10,7 @@ import "./ProxySimple.sol";
 contract Loan is Ownable{
     using SafeMath for uint;
 
+
 //Enum
     enum WorkflowStatus {
         RegisteringEntities,
@@ -64,10 +65,11 @@ contract Loan is Ownable{
     event VotesTallied();
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
 
+    ProxySimple proxy;
 //Constructor
     constructor(address _stacking, address _proxySimple) public onlyOwner{
         stacking=_stacking;
-        proxySimple=_proxySimple;
+        proxy = new ProxySimple(_proxySimple);
     }
 
 
@@ -92,13 +94,12 @@ contract Loan is Ownable{
 
     /// @notice Records the addresses of participants
     /// @dev Copy the array of users to the proxy, Error with Client call in ProxySimple.sol
-    /// @param _addr proxy address
-    function setEntity(address _addr) public onlyOwner {
-      address[] memory copyTab = ProxySimple(_addr).getAdrClients();
+    function setEntity() public onlyOwner {
+      address[] memory copyTab = proxy.getAdrClients();
 
-        for(uint i; i == copyTab.length; i++) {
-            votes[i] = Voter(true,false,ProxySimple(_addr).getUser(copyTab[i]).totalDeposit,0);
-            address voterAddr = ProxySimple(_addr).backToUser(i); //backToUser est un getter dans ce contrat(borrow)
+        for(uint i; i < copyTab.length; i++) {
+            votes[i] = Voter(true,false,proxy.getUser(copyTab[i]).xDeposit,0);
+            address voterAddr = proxy.adrClients(i); //backToUser est un getter dans ce contrat(borrow)
             voters[voterAddr] = votes[i];
         }
     }
@@ -126,13 +127,13 @@ contract Loan is Ownable{
     /// @dev For the moment we only vote once
     /// @param _loanRequestId of the loan request
 
-    function okLoans(uint _loanRequestId) external onlyOwner {
+    /* function okLoans(uint _loanRequestId) external onlyOwner {
         //require (borrowOpen == true);
         require(status == WorkflowStatus.VotingSessionEnded, "Not allowed");
         //require(voteCount>((votingPowerTotal/2),"pas assez de vote pour vous");
 
         uint count;
-        uint quorum = ProxySimple(proxySimple).totalVotingPower.div(2);
+      //  uint quorum = ProxySimple(proxySimple).totalVotingPower.div(2);
         for(uint i; i == loans.length; i++) {
             count = loans[i].voteCount;
             if( count <= quorum){
@@ -141,7 +142,7 @@ contract Loan is Ownable{
         }
 
         emit VotesTallied();
-    }
+    } */
 
     /// @notice Change the current status
     /// @dev

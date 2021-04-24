@@ -20,10 +20,8 @@ contract ProxySimple is Ownable{
 
   struct Client {
     bool lister;
-    uint[] amounts;
-    uint[] depositData;
-    uint totalDeposit;
-    uint withdrawalPending;
+    uint xDeposit;
+    uint withdrawPending;
   }
 
   // Mapping
@@ -34,9 +32,9 @@ contract ProxySimple is Ownable{
   mapping (uint => address) public backToUser;
 
   // Variable
-  
+
   // Address USDC pour le moment
-  
+
   IERC20 tokenAd;
 
   // Address contrat Staking
@@ -45,6 +43,7 @@ contract ProxySimple is Ownable{
   // Taux d'interet
   uint apy = 5 ;
   uint dayLock = 60 seconds;
+  uint public xLaunch;
   // Somme Global disponible prêt à payer
   uint totalWithdrawalAmount;
 
@@ -55,151 +54,82 @@ contract ProxySimple is Ownable{
   address[] public adrClients;
 
   // Event
-  
+
   event valideDepot(address client, uint amount);
   event authorizedWithdrawal(address client, uint amount);
 
-
-
   // Constructeur
-  
+
   constructor(address _stacking) public{
     stacking=_stacking;
+    xLaunch = block.timestamp;
   }
 
   // Function déposer des fonds - parametre nombre de jours bloqué =>(nb_dayLock) et le amount
 
-  
+
   function setTokenAd (IERC20 _tokenAd) external onlyOwner{
     tokenAd=_tokenAd;
-  } 
+  }
 
+  function updateXprice() internal view returns(uint x){
+    uint y = 1;
+    x =  y.add(((block.timestamp.sub(xLaunch)).div(31536000)).mul(apy).div(100));
+  }
 
+  function getAdrClients() external view returns(address[] memory) {
+    return adrClients;
+  }
+
+  function getUser(address _user) external view returns(Client memory) {
+    return user[_user];
+  }
   function deposit (uint amount) public payable  {
-    uint depositDate = uint(block.timestamp);
-
+    uint x = updateXprice();
     IERC20(tokenAd).transferFrom(msg.sender, stacking, amount);
-
-    user[msg.sender].amounts.push(amount);
-    user[msg.sender].depositData.push(depositDate);
-    user[msg.sender].totalDeposit = _getVotingPower(msg.sender);
+    uint DepositToX = amount.div(x);
+    user[msg.sender].xDeposit = user[msg.sender].xDeposit.add(DepositToX);
 
     if (user[msg.sender].lister == false) {
       adrClients.push(msg.sender);
       user[msg.sender].lister = true;
+      user[msg.sender].withdrawPending = 0;
     }
-
     // Validation de l'event
     emit valideDepot(msg.sender, amount);
-    
     // Maj des amount de dépôt
     totalVotingPower= totalVotingPower.add(amount);
   }
 
-
-  function _getVotingPower(address _member) internal view returns(uint) {
-    uint length = user[_member].amounts.length;
-    uint amountTotal;
-    for (uint i; i < length; i++) {
-      amountTotal += user[_member].amounts[i];
-    }
-    return amountTotal;
-    }
-    
   // Function demande de retrait - parametre amount souhaitant retirer
 
-  function withdrawPending (uint withdrawalAmount) public payable {
-    uint minWithdrawalDate;
-    uint withdrawable;
-    uint length = user[msg.sender].depositData.length;
-    if (length == 1) {
-        withdrawable = 0;
-        
-    } else {
-        
-    for(uint i; i < length ; i++) {
-      minWithdrawalDate = user[msg.sender].depositData[i].add(dayLock);
-      if (minWithdrawalDate < uint(block.timestamp)) {
-        withdrawable = i;
-      } else {
-          require(user[msg.sender].depositData[0].add(dayLock) <= uint(block.timestamp), "withdraw deadline is not reached");
-        }
-    }
-    }
-    uint withdrawableTotal; 
-    
-    if (withdrawable > 0){
-        // Calcule du amount des interets disponible + le amount de depot initial = amount Total Disponible à l'instanté
-        for (uint i ; i <= withdrawable ; i++) {
-            uint depositTime = uint(block.timestamp) - user[msg.sender].depositData[i];
-            uint interestAmount = ((depositTime.mul(100).div(315360000)).mul(apy).mul(user[msg.sender].amounts[i]).mul(100)).div(100);
-            uint amountTotal = user[msg.sender].amounts[i].add(interestAmount);
-            withdrawableTotal = withdrawableTotal.add(amountTotal);
-        }
-    
-    user[msg.sender].withdrawalPending = user[msg.sender].withdrawalPending.add(withdrawalAmount) ;
-    
-    require(user[msg.sender].withdrawalPending <= withdrawableTotal, "to much withdraw"); 
-    
-    } else {
-        withdrawableTotal = user[msg.sender].amounts[0]; 
-    require( withdrawalAmount <= withdrawableTotal, "to much withdraw"); 
-    
-    user[msg.sender].withdrawalPending = user[msg.sender].withdrawalPending.add(withdrawalAmount) ;
-   
-      }
-    require(withdrawalAmount <=  withdrawableTotal && withdrawalAmount <= user[msg.sender].totalDeposit , "not enought a gain to withdraw");
+  function withdrawPending (uint withdrawAmount) public {
+    require(withdrawAmount <= user[msg.sender].xDeposit);
 
-
-  
-    
-    
+    user[msg.sender].withdrawPending = user[msg.sender].withdrawPending.add(withdrawAmount);
+    user[msg.sender].xDeposit = user[msg.sender].xDeposit.sub(withdrawAmount);
     // Maj du amount Global Payement
-    totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawalAmount);
-    
-    uint leftDeposits = user[msg.sender].totalDeposit.sub(withdrawalAmount);
-    
-    uint[] memory zero;
-    
-    user[msg.sender].amounts = zero;
-    user[msg.sender].amounts.push(leftDeposits);
-    user[msg.sender].depositData = zero;
-    user[msg.sender].depositData.push(uint(block.timestamp)); // !! refresh le day dayLock
-    user[msg.sender].totalDeposit = leftDeposits;
+    totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawAmount);
 
     // Validation de l'event
-    emit authorizedWithdrawal(msg.sender, withdrawalAmount);
+    emit authorizedWithdrawal(msg.sender, withdrawAmount);
 
     // Maj des amount de dépôt
-    totalVotingPower = totalVotingPower.sub(withdrawalAmount);
-  }
-
-  function getAdrClients() external view returns(address[] memory) {
-  return adrClients;
-  }
-
- 
-  function getUser(address adr) external view returns(Client memory) {
-  return user[adr];
+    totalVotingPower = totalVotingPower.sub(withdrawAmount);
   }
 
   // Function de Retrait
 
   function Withdraw (IERC20 _address) public payable onlyOwner {
-    uint aPayer;
-    address userRefund;
+    uint toPay;
     uint length = adrClients.length;
-    
     // recherche de tous les clients ayant fait une demande de retrait
     for(uint i; i < length ; i++) {
-      aPayer = user[adrClients[i]].withdrawalPending;
-      userRefund = backToUser[i];
-
-      IERC20(_address).transferFrom(address(this), userRefund, aPayer);
-
+      toPay = user[adrClients[i]].withdrawPending;
+      IERC20(_address).transferFrom(address(this), adrClients[i], toPay);
       //Maj du totalWithdrawalAmount
-      totalWithdrawalAmount = totalWithdrawalAmount.sub(aPayer);
-      user[adrClients[i]].withdrawalPending = 0;
+      totalWithdrawalAmount = totalWithdrawalAmount.sub(toPay);
+      user[adrClients[i]].withdrawPending = 0;
     }
   }
 }
