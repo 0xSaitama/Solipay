@@ -3,6 +3,8 @@ pragma solidity 0.6.11;
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
+import "@uniswap/v2-periphery/contracts/interfaces/IERC20.sol";
+
 
 import '@uniswap/v2-periphery/contracts/libraries/UniswapV2OracleLibrary.sol';
 import '@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol';
@@ -64,4 +66,18 @@ contract OracleSimplePair {
             amountOut = price1Average.mul(amountIn).decode144();
         }
     }
+    function getLpPrice(IERC20 lpToken, uint amount) external view returns(uint lpPriceT0) {
+      uint112 reserve0;
+      uint112 reserve1;
+      uint32 bTtl;
+      (reserve0, reserve1, bTtl) = pair.getReserves();
+      uint reserve0Value = price0Average.mul(reserve0).decode144();
+      uint reserve1Value = price1Average.mul(reserve1).decode144();
+      uint totalSupply = IERC20(lpToken).totalSupply();
+    //  lpPriceT1 = ((reserve1Value + reserve0)*amount)/totalSupply;
+      lpPriceT0 = ((reserve0Value + reserve1)*amount)/totalSupply;
+
+
+    }
+
 }
