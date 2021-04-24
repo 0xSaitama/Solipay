@@ -9,7 +9,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import getMessageError from './getMessageError'
-var bigInt = require("big-integer");
+var BigNumber = require('big-number');
 
 const getContract = async (contract) => {
   const web3 = await getWeb3();
@@ -28,32 +28,34 @@ const getContract = async (contract) => {
 function Admin({ account, setMsg }) {
   const [addr1, setAddr1] = useState('0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa');
   const [addr2, setAddr2] = useState('0x1f9840a85d5af5bf1d1762f925bdaddc4201f984');
-  const [lpAddress, setlpAddress] = useState('0xfa73472326e0e0128e2ca6ceb1964fd77f4ae78d')
-  const [addressContract, setAddressContract] = useState('0xF3830e7711591c937157c92A209CccE34C741a52');
+  const [lpAddress, setlpAddress] = useState('0xFA73472326E0e0128E2CA6CeB1964fd77F4AE78d')
+  const [addressContract, setAddressContract] = useState('0x61dcb07cf4fe59907b37455b978c277687385a8e');
   const [amount, setAmount] = useState(0);
   const [amount2, setAmount2] = useState(0);
   const [outputValue, setOutputValue] = useState(0);
   const [tolerance, setTolerance] = useState(0);
-  const [balance1, setBalance1] = useState();
-  const [balance2, setBalance2] = useState();
+  const [balance1, setBalance1] = useState(0);
+  const [balance2, setBalance2] = useState(0);
+  const [lpAmount, setlpAmount] = useState(0);
   const [lpBalance, setLpBalance] = useState(0);
-  const [lpPriceT0, setLpPriceT0] = useState();
+  const [lpPriceT0, setLpPriceT0] = useState(0);
   const [lpPriceT1, setLpPriceT1] = useState(0);
   const [decimal1, setDecimal1] = useState(18);
   const [decimal2, setDecimal2] = useState(18);
 
 
 
+
 useEffect(() => {
 
-  const decimals = async () => {
-    const contract = await getContract(Stacking);
-    const web3 = await getWeb3();
-    const decimals1 = await contract.methods.getDecimals(addr1).call();
-    const decimals2 = await contract.methods.getDecimals(addr2).call();
-    setDecimal1(Number(decimals1));
-    setDecimal2(Number(decimals2));
-  }
+  // const decimals = async () => {
+  //   const contract = await getContract(Stacking);
+  //   const web3 = await getWeb3();
+  //   const decimals1 = await contract.methods.getDecimals(addr1).call();
+  //   const decimals2 = await contract.methods.getDecimals(addr2).call();
+  //   setDecimal1(Number(decimals1));
+  //   setDecimal2(Number(decimals2));
+  // }
 
   const balanceView = async () => {
     const contract = await getContract(Stacking);
@@ -61,12 +63,12 @@ useEffect(() => {
     const balanceCall1 = await contract.methods.getBalance(addr1).call();
     const balanceCall2 = await contract.methods.getBalance(addr2).call();
     const balanceLpCall = await contract.methods.getBalance(lpAddress).call();
-    setBalance1(Number(balanceCall1)/(10**decimal1));
-    setBalance2(Number(balanceCall2)/(10**decimal2));
-    setLpBalance(Number(balanceLpCall)/(10**decimal2))
+    setBalance1(web3.utils.fromWei(balanceCall1.toString(), 'ether'));
+    setBalance2(web3.utils.fromWei(balanceCall2.toString(), 'ether'));
+    setLpBalance(web3.utils.fromWei(balanceLpCall.toString(), 'ether'));
     }
 
-  decimals();
+  //decimals();
   balanceView();
 
   }, []);
@@ -88,7 +90,7 @@ useEffect(() => {
   const approveUni = async(address) => {
     const contract = await getContract(Stacking);
     const web3 = await getWeb3();
-    const toApprove = "9999999999999999999999";
+    const toApprove = web3.utils.toWei("999999", 'ether');
     const approved = await contract.methods.approveERC20Uni(address,toApprove).send({ from: account }).on('error', function(error){
       setMsg('error');
       })
@@ -137,26 +139,24 @@ useEffect(() => {
     let contract = await getContract(Stacking);
     const web3 = await getWeb3();
     contract = await getContract(OracleSimplePair);
-    const toConvert = (amount*10**decimal1).toString();
+    const toConvert = web3.utils.toWei(amount.toString(), 'ether');
     const output = await contract.methods.consult(addr1,toConvert).call({ from: account }, function(error, result) {
       if (error ==null) {
         setMsg(`prices updated`);
-
-        console.log(outputValue);
       } else {
         setMsg(`error`);
         }
       });
-      setOutputValue(Number(output)/10**18);
+      setOutputValue(web3.utils.fromWei(output.toString(), 'ether'));
     }
 
     const stacking = async() => {
       const contract = await getContract(Stacking);
       const web3 = await getWeb3();
-      let amountDesiredA = (Number(amount)*10**decimal1).toString();
-      let amountDesiredB = (Number(amount2)*10**decimal2).toString();
-      let amountMinA = (amountMin(amount*10**decimal1)).toString();
-      let amountMinB = (amountMin(amount2*10**decimal2)).toString();
+      let amountDesiredA = web3.utils.toWei(amount.toString(), 'ether');
+      let amountDesiredB = web3.utils.toWei(amount2.toString(), 'ether');
+      let amountMinA = web3.utils.toWei((amountMin(amount)).toString(), 'ether');
+      let amountMinB = web3.utils.toWei((amountMin(amount2)).toString(), 'ether');
       let deadline = Date.now() + 180; //set deadline at 3min;
       const add = await contract.methods.addLiquidity(addr1,addr2,amountDesiredA,amountDesiredB,amountMinA,amountMinB,deadline).send({from:account})
       .on('error', function(error){
@@ -171,9 +171,9 @@ useEffect(() => {
   const lpPricing = async() => {
     const contract = await getContract(OracleSimplePair);
     const web3 = await getWeb3();
-    const toPrice = (Number(lpBalance)*10**decimal1).toString();
+    const toPrice = web3.utils.toWei(lpBalance.toString(), 'ether');
     const price = await contract.methods.getLpPrice(lpAddress, toPrice).call();
-      setLpPriceT0(Number(price));
+      setLpPriceT0(web3.utils.fromWei(price.toString(), 'ether'));
       console.log(lpPriceT0);
     }
 
@@ -181,8 +181,8 @@ useEffect(() => {
   const swap = async() => {
     const contract = await getContract(Stacking);
     const web3 = await getWeb3();
-    let amountIn = (Number(amount)*10**decimal1).toString();
-    let amountOutMin = (amountMin(amount2*10**decimal2)).toString();
+    let amountIn = web3.utils.toWei(amount.toString(), 'ether');
+    let amountOutMin = web3.utils.toWei((amountMin(amount2)).toString(), 'ether');
     let deadline = Date.now() + 180; //set deadline at 3min;
     let swap = await contract.methods.swapTokens(addr1,addr2,amountIn,amountOutMin,deadline).send({ from: account }).on('error', function(error){
       setMsg('error');
@@ -198,7 +198,21 @@ useEffect(() => {
     const exitStaking = async () => {
       const contract = await getContract(Stacking);
       const web3 = await getWeb3();
-    }
+      const liquidity = web3.utils.toWei(lpAmount.toString(), 'ether');
+      const amountAmin = web3.utils.toWei((amountMin(amount)).toString(), 'ether');
+      const amountBmin = web3.utils.toWei((amountMin(amount2)).toString(), 'ether');
+      let deadline = Date.now() + 180; //set deadline at 3min;
+      const removed = await contract.methods.removeLiquidity(addr1,addr2,liquidity,amountAmin,amountBmin,deadline).send({ from: account }).on('error', function(error){
+        setMsg('error');
+
+        })
+        .then(function(result) {
+          console.log(result);
+          setMsg(`removed liquidity ${removed}`);
+        });
+
+      }
+
 
   return (
     <div>
@@ -278,6 +292,15 @@ useEffect(() => {
                   />
             </Grid>
             <Grid item>
+              <input
+                        type="number"
+                        id="standard-basic"
+                        label="LP"
+                        placeholder={lpAmount}
+                        onChange={async({target}) => await setlpAmount(target.value)}
+                      />
+                </Grid>
+            <Grid item>
             <Button variant="contained" color="secondary" onClick={() => swap()}>
               SWAP
             </Button>
@@ -286,6 +309,9 @@ useEffect(() => {
             </Button>
             <Button variant="contained" color="primary" onClick={() => stacking()}>
               ADD LIQUIDITY
+            </Button>
+            <Button variant="contained" color="secondary" onClick={() => exitStaking()}>
+              REMOVE LIQUIDITY
             </Button>
         </Grid>
         <Grid item>
@@ -300,6 +326,9 @@ useEffect(() => {
         </Button>
         <Button variant="contained" color="secondary" onClick={() => approveUni(addr2)}>
         Approve2
+        </Button>
+        <Button variant="contained" color="secondary" onClick={() => approveUni(lpAddress)}>
+        ApproveLP
         </Button>
         <Button variant="contained" color="primary" onClick={() => setContractAddress()}>
           setContract

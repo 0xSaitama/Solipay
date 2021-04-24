@@ -34,8 +34,8 @@ function setStackingAddress(address contractAddr) external onlyOwner {
    return  decimals;
  }
 
- function transferERC20(IERC20 token, uint amountIn) external onlyOwner{
-   IERC20(token).transferFrom(msg.sender,address(this),amountIn);
+ function transferERC20(IERC20 token, address proxySimple, uint amountIn) external onlyOwner{
+   IERC20(token).transferFrom(address(this),proxySimple,amountIn);
  }
 
  function approveERC20Uni(IERC20 token, uint amountIn) onlyOwner external returns(uint){
