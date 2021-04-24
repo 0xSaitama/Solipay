@@ -1,9 +1,9 @@
-// deployer un contrat et si il a des constructor il faut les deployer aussi 
+// deployer un contrat et si il a des constructor il faut les deployer aussi
 const Stacking = artifacts.require("Stacking");
 const Oracle = artifacts.require("OracleSimplePair");
 const ProxySimple = artifacts.require("ProxySimple");
 module.exports = async function(deployer, _network, accounts) {
- 
+
   const usdtAddress = "0x07de306ff27a2b630b1141956844eb1552b956b5";//kovan
   const factory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"; //kovan
 
@@ -16,8 +16,9 @@ module.exports = async function(deployer, _network, accounts) {
 
 
  await deployer.deploy(Stacking, uniRouter);
- await deployer.deploy(ProxySimple);
- // await deployer.deploy(Oracle, factory, daiAddress, uniAddress);// ajàouter Oracle
+ const stacking = await Stacking.deployed()
+ await deployer.deploy(ProxySimple, stacking.address);
+ await deployer.deploy(Oracle, factory, daiAddress, uniAddress);
  //let stacking = await Stacking.deployed()
 //const oracle = await OracleSimplePair.deployed();
  // await MyDeFi.approveStack(daiAddress,MyDeFi.address,10);
