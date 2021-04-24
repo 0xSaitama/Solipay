@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.11;
 pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -6,7 +7,7 @@ import "./ProxySimple.sol";
 
 /// @title A contract for the management of votes
 /// @dev The contract can still be improved
-contract Loan is ProxySimple {
+contract Loan is Ownable{
     using SafeMath for uint;
 
 //Enum
@@ -40,7 +41,8 @@ contract Loan is ProxySimple {
     uint numberOfEntity;
     bool borrowOpen;
     WorkflowStatus public status;
-    //uint coffre;
+    address public stacking;
+    address public proxySimple;
 
 //Mapping
     mapping(address => Voter) public voters;
@@ -61,6 +63,13 @@ contract Loan is ProxySimple {
     event Voted (address entity, uint loanRequestId);
     event VotesTallied();
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
+
+//Constructor
+    constructor(address _stacking, address _proxySimple) public onlyOwner{
+        stacking=_stacking;
+        proxySimple=_proxySimple;
+    }
+
 
 //Function
 
@@ -123,7 +132,7 @@ contract Loan is ProxySimple {
         //require(voteCount>((votingPowerTotal/2),"pas assez de vote pour vous");
 
         uint count;
-        uint quorum = ProxySimple.totalVotingPower.div(2);
+        uint quorum = ProxySimple(proxySimple).totalVotingPower.div(2);
         for(uint i; i == loans.length; i++) {
             count = loans[i].voteCount;
             if( count <= quorum){

@@ -6,10 +6,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+//import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./Stacking.sol";
+
+
+
 
 contract ProxySimple is Ownable{
   using SafeMath for uint;
+
 
   // Structure Client
 
@@ -29,10 +34,17 @@ contract ProxySimple is Ownable{
   mapping (uint => address) public backToUser;
 
   // Variable
+  
+  // Address USDC pour le moment
+  
+  IERC20 tokenAd;
+
+  // Address contrat Staking
+  address public stacking;
 
   // Taux d'interet
   uint apy = 5 ;
-  uint dayLock = 1 seconds;
+  uint dayLock = 60 seconds;
   // Somme Global disponible prêt à payer
   uint totalWithdrawalAmount;
 
@@ -44,14 +56,29 @@ contract ProxySimple is Ownable{
 
   // Event
   
-
   event valideDepot(address client, uint amount);
   event authorizedWithdrawal(address client, uint amount);
 
+
+
+  // Constructeur
+  
+  constructor(address _stacking) public{
+    stacking=_stacking;
+  }
+
   // Function déposer des fonds - parametre nombre de jours bloqué =>(nb_dayLock) et le amount
+
+  
+  function setTokenAd (IERC20 _tokenAd) external onlyOwner{
+    tokenAd=_tokenAd;
+  } 
+
 
   function deposit (uint amount) public payable  {
     uint depositDate = uint(block.timestamp);
+
+    IERC20(tokenAd).transferFrom(msg.sender, stacking, amount);
 
     user[msg.sender].amounts.push(amount);
     user[msg.sender].depositData.push(depositDate);
@@ -99,7 +126,7 @@ contract ProxySimple is Ownable{
         }
     }
     }
-    uint withdrawableTotal; //dehors
+    uint withdrawableTotal; 
     
     if (withdrawable > 0){
         // Calcule du amount des interets disponible + le amount de depot initial = amount Total Disponible à l'instanté
@@ -112,11 +139,11 @@ contract ProxySimple is Ownable{
     
     user[msg.sender].withdrawalPending = user[msg.sender].withdrawalPending.add(withdrawalAmount) ;
     
-    require(user[msg.sender].withdrawalPending <= withdrawableTotal, "to much withdraw"); //ici le prob
+    require(user[msg.sender].withdrawalPending <= withdrawableTotal, "to much withdraw"); 
     
     } else {
         withdrawableTotal = user[msg.sender].amounts[0]; 
-    require( withdrawalAmount <= withdrawableTotal, "to much withdraw"); //ici le prob
+    require( withdrawalAmount <= withdrawableTotal, "to much withdraw"); 
     
     user[msg.sender].withdrawalPending = user[msg.sender].withdrawalPending.add(withdrawalAmount) ;
    
@@ -162,12 +189,13 @@ contract ProxySimple is Ownable{
     uint aPayer;
     address userRefund;
     uint length = adrClients.length;
+    
     // recherche de tous les clients ayant fait une demande de retrait
     for(uint i; i < length ; i++) {
       aPayer = user[adrClients[i]].withdrawalPending;
       userRefund = backToUser[i];
 
-      IERC20(_address).transferFrom(msg.sender, userRefund, aPayer);
+      IERC20(_address).transferFrom(address(this), userRefund, aPayer);
 
       //Maj du totalWithdrawalAmount
       totalWithdrawalAmount = totalWithdrawalAmount.sub(aPayer);
