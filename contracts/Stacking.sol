@@ -34,6 +34,10 @@ function setStackingAddress(address contractAddr) external onlyOwner {
    return  decimals;
  }
 
+  function getSymbol(address token) external view returns(string memory symbol) {
+    return symbol = IERC20(token).symbol();
+  }
+
  function transferERC20(IERC20 token, address proxySimple, uint amountIn) external onlyOwner{
    IERC20(token).transferFrom(address(this),proxySimple,amountIn);
  }
