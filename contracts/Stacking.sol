@@ -11,42 +11,65 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 contract Stacking is Ownable{
   using SafeMath for uint;
 
- IUniswapV2Router02 public uniswapRouter;
- address public stacking;
+ IUniswapV2Router02 public uniswapRouter; //initialization of Uni Router
+ address public stacking; //initialization of the contract address variable
 
 
  constructor(address _uniswap) public {
-   uniswapRouter = IUniswapV2Router02(_uniswap);
+   uniswapRouter = IUniswapV2Router02(_uniswap); //set the UNI Router instance with a specific address
  }
 
 receive() external payable { }
 
+/// @notice Define stacking contract address
+/// @dev
+/// @param contractAddr
 function setStackingAddress(address contractAddr) external onlyOwner {
   stacking = contractAddr ;
 }
 
- function getBalance(address token) external view returns (uint) {
+/// @notice fetch an ERC20 balance of the stacking contract
+/// @dev
+/// @param token address
+/// @return contract's balance
+ function getBalance(IERC20 token) external view returns (uint) {
    return IERC20(token).balanceOf(address(this));
  }
 
- function getDecimals(address token) external view returns(uint) {
-   uint decimals = IERC20(token).decimals();
-   return  decimals;
+ /// @notice fetch an ERC20 token decimals
+ /// @dev
+ /// @param token address
+ /// return decimals uint8
+ function getDecimals(address token) external view returns(uint8 decimals) {
+   decimals = IERC20(token).decimals();
+
  }
-
+ /// @notice fetch an ERC20 token symbol
+ /// @dev
+ /// @param token address
+ /// return symbol string
   function getSymbol(address token) external view returns(string memory symbol) {
-    return symbol = IERC20(token).symbol();
+    symbol = IERC20(token).symbol();
   }
-
+  /// @notice transfer an ERC20 token to the stacking contract
+  /// @dev
+  /// @param token, proxySimple, amountIn
  function transferERC20(IERC20 token, address proxySimple, uint amountIn) external onlyOwner{
    IERC20(token).transferFrom(address(this),proxySimple,amountIn);
  }
 
+ /// @notice approve an ERC20 token amount to uniswap Router
+ /// @dev function restricted to the owner of the contract
+ /// @param token, amountIn
+ /// @return amountIn the approved amount for uniswap Router
  function approveERC20Uni(IERC20 token, uint amountIn) onlyOwner external returns(uint){
    IERC20(token).approve(address(uniswapRouter), amountIn);
    return amountIn;
  }
-  // La fonction qui va permettre le swap
+ /// @notice swap ERC20 tokens with an exact input to a desired ouput
+ /// @dev an output minimum amount is required as parameter,
+ /// it reverts if the swap give an output below amountOutMin
+ /// @param tokenA, tokenB, amountIn, amountOutMin, deadline
  function swapTokens(
    address tokenA,
    address tokenB,
@@ -54,20 +77,25 @@ function setStackingAddress(address contractAddr) external onlyOwner {
    uint amountOutMin,
    uint deadline
    ) external onlyOwner {
-   //transferFromER20
    address[] memory path = new address[](2); // Création du path
    path[0] = address(tokenA); // initialisation du path avec l'address du token à échanger
    path[1] = address(tokenB); // initialisation du path avec l'address du WETH d'Uniswap
-   //approveERC20Uni
+   //approveERC20Uni() before calling this function
+   //fetch uniswap Router function swapExactTokensForTokens() with same params
    uniswapRouter.swapExactTokensForTokens(
      amountIn,
      amountOutMin,
      path,
      stacking,
      deadline
-   ); // effectuer le swap, ETH sera transférer directement au msg.sender
+   ); // effectuer le swap, ETH sera transférer directement au contrat stacking
  }
 
+ /// @notice add ERC20 tokens in liquidity pools
+ /// @dev outputs minimum amounts are required as parameter,
+ /// it reverts if the swap give an output below amountTokenAMin or amountTokenBMin
+ /// @param tokenA, tokenB, amountTokenADesired, amountTokenBDesired, amountTokenAMin, amountTokenBMin, deadline
+ /// return amountA, amountB added in liquidity & liquidity tokens received by stacking contract
  function addLiquidity(
    address tokenA,
    address tokenB,
@@ -77,9 +105,15 @@ function setStackingAddress(address contractAddr) external onlyOwner {
    uint amountTokenBMin,
    uint deadline
   ) external payable onlyOwner returns (uint amountTokenA, uint amountTokenB, uint liquidity) {
+    //fetch uniswap Router function addLiquidity() with same params
    return uniswapRouter.addLiquidity(tokenA, tokenB, amountTokenADesired,amountTokenBDesired, amountTokenAMin, amountTokenBMin, stacking, deadline);
  }
 
+ /// @notice remove ERC20 tokens from liquidity pools
+ /// @dev liquidity tokens amount & outputs minimum amounts are required as parameter,
+ /// it reverts if the swap give an output below amountAMin or amountBMin
+ /// @param tokenA, tokenB, amountTokenADesired, amountTokenBDesired, amountTokenAMin, amountTokenBMin, deadline
+ /// @return amountA, amountB received by stacking contract
   function removeLiquidity(
   address tokenA,
   address tokenB,
@@ -88,6 +122,7 @@ function setStackingAddress(address contractAddr) external onlyOwner {
   uint amountBMin,
   uint deadline
   ) external onlyOwner returns (uint amountA, uint amountB) {
+    //fetch uniswap Router function addLiquidity() with same params
   return uniswapRouter.removeLiquidity(tokenA,tokenB,liquidity,amountAMin,amountBMin,stacking,deadline);
   }
 }
