@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.11;
 
 
@@ -22,7 +23,7 @@ contract Stacking is Ownable{
 receive() external payable { }
 
 /// @notice Define stacking contract address
-/// @param contractAddr
+/// @param contractAddr the contract address referring to stacking.sol
 function setStackingAddress(address contractAddr) external onlyOwner {
   stacking = contractAddr ;
 }
@@ -110,7 +111,7 @@ function setStackingAddress(address contractAddr) external onlyOwner {
  /// @dev liquidity tokens amount & outputs minimum amounts are required as parameter,
  /// it reverts if the swap give an output below amountAMin or amountBMin
  /// @param tokenA, tokenB, amountTokenADesired, amountTokenBDesired, amountTokenAMin, amountTokenBMin, deadline
- /// @return amountA, amountB received by stacking contract
+ /// @return amountA amountB received by stacking contract
   function removeLiquidity(
   address tokenA,
   address tokenB,

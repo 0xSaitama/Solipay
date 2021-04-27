@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 //import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Stacking.sol";
+import "./interfaces/IBorrow.sol";
 
 
 
@@ -46,6 +47,8 @@ contract ProxySimple is Ownable{
 
   uint public totalVotingPower;
 
+  address fundingProject;
+
   // Tableaux Client
 
   address[] public adrClients;
@@ -80,19 +83,23 @@ contract ProxySimple is Ownable{
 
   /// @notice return the client's address aray
   /// @dev usefull as relay for sending the client addresses to a borrow.sol contract
+  /// @dev could be useless if it is possible access directly to the contract variable
   /// @return array of client address
   function getAdrClients() external view returns(address[] memory) {
     return adrClients;
   }
 
   /// @notice return client object
-  /// @dev usefull as relay for sending the client properties to a borrow.sol contract
+  /// @dev usefull as relay for sending the client total deposit in x value to a borrow.sol contract
   /// @param _user the client address
   /// @return client object
-  function getUser(address _user) external view returns(Client memory) {
-    return user[_user];
+  function getUserDeposits(address _user) external view returns(uint) {
+    return user[_user].xTotalDeposit;
   }
 
+  function setFundingProject(address borrowAddress) external onlyOwner returns(address) {
+    fundingProject = IBorrow(borrowAddress).receiverAddress();
+  }
   /// @notice make a deposit by the user in the staking contract
   /// @dev set a deposit lock by computation of the deposit value with interests at the unlock date
   /// and verification when calling withdrawPending

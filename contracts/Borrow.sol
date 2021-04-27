@@ -3,7 +3,7 @@ pragma solidity 0.6.11;
 pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./ProxySimple.sol";
+import "./interfaces/IProxy.sol";
 
 /// @title A contract for the management of votes
 /// @dev The contract can still be improved
@@ -26,29 +26,33 @@ contract Loan is Ownable{
         bool isRegistered;
         bool hasVoted;
         uint votingPower;
-        uint loanRequestID;
+        uint proposalId;
     }
 
 
     struct LoanRequest {
         string description;
         uint voteCount;
-        uint amountRequest;
-        bool state;
+        address receiver;
+  //      uint amountRequest;
+  //      bool state;
     }
 
 //Variable
-    uint numberOfLoanRequest;
-    uint numberOfEntity;
-    bool borrowOpen;
+    /* uint numberOfLoanRequest;
+    uint numberOfEntity; */
+//    bool borrowOpen;
     WorkflowStatus public status;
     address public stacking;
     address public proxySimple;
+    IProxy proxy;
+    uint winningProposalId;
+    address receiverAddress;
 
 //Mapping
     mapping(address => Voter) public voters;
-    mapping(address => uint) public debts;
-    mapping(uint => address) public borrowers; // LoanRequest est un struct
+    /* mapping(address => uint) public debts;
+    mapping(uint => address) public borrowers; // LoanRequest est un struct */
 
 //Tableau
     Voter[] public votes;
@@ -65,11 +69,11 @@ contract Loan is Ownable{
     event VotesTallied();
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
 
-    ProxySimple proxy;
+
 //Constructor
     constructor(address _stacking, address _proxySimple) public onlyOwner{
         stacking=_stacking;
-        proxy = new ProxySimple(_proxySimple);
+        proxy = IProxy(_proxySimple);
     }
 
 
@@ -79,53 +83,50 @@ contract Loan is Ownable{
     /// @notice Records loan requests
     /// @dev
     /// @param _description Borrower motivation
-    /// @param _amount Amount requested
-    function registerLoanRequest(string memory _description, uint _amount) external {
+    /// @param _description receiver description of the project to fund and it address
+    function registerLoanRequest(string memory _description, address receiver) public onlyOwner {
 
         require(status == WorkflowStatus.LoanRequestStarted, "Not allowed");
         require(voters[msg.sender].isRegistered,"You are not registred");
 
-        LoanRequest memory loanR = LoanRequest(_description, 0, _amount, false);
+        LoanRequest memory loanR = LoanRequest(_description, 0, receiver);
         loans.push(loanR);
 
-        uint loanRequestId = loans.length.sub(1);
-        borrowers[loanRequestId] = msg.sender;
+    //    uint proposalId = loans.length.sub(1);
+    //    borrowers[loanRequestId] = msg.sender;
     }
 
     /// @notice Records the addresses of participants
-    /// @dev Copy the array of users to the proxy, Error with Client call in ProxySimple.sol
+    /// @dev Copy the array of users to the proxy, could be upgrade without for loop
     function setEntity() public onlyOwner {
       address[] memory copyTab = proxy.getAdrClients();
 
         for(uint i; i < copyTab.length; i++) {
-            votes[i] = Voter(true,false,proxy.getUser(copyTab[i]).xDeposit,0);
-            address voterAddr = proxy.adrClients(i); //backToUser est un getter dans ce contrat(borrow)
+            votes[i] = Voter(true,false,proxy.getUserDeposits(copyTab[i]),0);
+            address voterAddr = copyTab[i];
             voters[voterAddr] = votes[i];
         }
     }
 
     /// @notice Function to vote, Id 0 for blank vote
     /// @dev For the moment we only vote once
-    /// @param _loanRequestId Proxy address
-    function vote(uint _loanRequestId) external {
+    /// @param _proposalId Proxy address
+    function vote(uint _proposalId) external {
         require(status == WorkflowStatus.VotingSessionStarted, "Not allowed");
         require(voters[msg.sender].isRegistered,"You are not registred");
         require(!voters[msg.sender].hasVoted, "Already voted");
 
         voters[msg.sender].hasVoted = true;
-        voters[msg.sender].loanRequestID = _loanRequestId;
+        voters[msg.sender].proposalId = _proposalId;
 
-        emit Voted(msg.sender, _loanRequestId);
+        emit Voted(msg.sender, _proposalId);
 
-        loans[_loanRequestId].voteCount = loans[_loanRequestId].voteCount.add(voters[msg.sender].votingPower);
+        loans[_proposalId].voteCount = loans[_proposalId].voteCount.add(voters[msg.sender].votingPower);
     }
 
   //function borrowMode
-  //( change le bool)
 
-    /// @notice See if the loan is possible
-    /// @dev For the moment we only vote once
-    /// @param _loanRequestId of the loan request
+
 
     /* function okLoans(uint _loanRequestId) external onlyOwner {
         //require (borrowOpen == true);
@@ -144,6 +145,26 @@ contract Loan is Ownable{
         emit VotesTallied();
     } */
 
+    function getWinningProposal() private onlyOwner returns (uint _proposalId) {
+        require(status == WorkflowStatus.VotingSessionEnded);
+            uint winnerVoteCount = 0;
+            uint challenger = 0;
+            for (uint i = 0; i < loans.length; i++) {
+                if (loans[i].voteCount > winnerVoteCount) {
+                    winnerVoteCount = loans[i].voteCount;
+                    _proposalId = i;
+                } else if (loans[i].voteCount == winnerVoteCount) {
+                    challenger = i;
+                }
+            }
+            winningProposalId = _proposalId;
+            if(winnerVoteCount == loans[challenger].voteCount) {
+                 winningProposalId = 0;
+            }
+            emit VotesTallied();
+            return winningProposalId;
+          }
+
     /// @notice Change the current status
     /// @dev
 
@@ -152,6 +173,7 @@ contract Loan is Ownable{
 
         if (status == WorkflowStatus.RegisteringEntities) {
             status = WorkflowStatus.LoanRequestStarted;
+            registerLoanRequest("none of following proposals",stacking);
         }
         else if (status == WorkflowStatus.LoanRequestStarted) {
             status = WorkflowStatus.LoanRequestEnded;
@@ -168,4 +190,10 @@ contract Loan is Ownable{
 
         emit WorkflowStatusChange(previousStatus, status);
     }
+
+    function setWiningAddress() external onlyOwner {
+      require(status == WorkflowStatus.VotesTallied);
+      receiverAddress = loans[winningProposalId].receiver;
+    }
+
 }

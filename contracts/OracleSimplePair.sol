@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.11;
 
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
@@ -73,7 +74,7 @@ contract OracleSimplePair {
       uint32 bTtl;
       (reserve0, reserve1, bTtl) = pair.getReserves(); //fetch liquiditie's reserves
       uint reserve0Value = price0Average.mul(reserve0).decode144(); // convert reserve0 in a token1 amount
-      uint reserve1Value = price1Average.mul(reserve1).decode144(); // convert reserve1 in a token0 amount
+    //  uint reserve1Value = price1Average.mul(reserve1).decode144(); // convert reserve1 in a token0 amount
       uint totalSupply = IERC20(lpToken).totalSupply(); //fetch LP totalSupply
     //  lpPriceT1 = ((reserve1Value + reserve0)*amount)/totalSupply;
       lpPriceT0 = ((reserve0Value + reserve1)*amount)/totalSupply; //calculate the LP amount in a token0 amount
