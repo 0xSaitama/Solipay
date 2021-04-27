@@ -12,7 +12,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 
 import getMessageError from './getMessageError'
-var BigNumber = require('big-number');
+
 
 const getContract = async (contract) => {
   const web3 = await getWeb3();

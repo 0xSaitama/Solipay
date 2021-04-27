@@ -40,7 +40,8 @@ function Public({ account, setMsg }) {
     const balanceView = async () => {
       let contract = await getContract(ProxySimple);
       const web3 = await getWeb3();
-      const xDeposit = await contract.methods.getUserDeposits(account).call();
+      const accounts = await web3.eth.getAccounts();
+      const xDeposit = await contract.methods.getUserDeposits(accounts[0]).call();
       contract = await getContract(Stacking);
       const x = await contract.methods.updateXprice().call();
       const depositTotal = Number(xDeposit) * Number(x);
