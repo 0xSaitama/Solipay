@@ -19,33 +19,30 @@ contract ProxySimple is Ownable{
   // Structure Client
 
   struct Client {
-    bool lister;
-    uint xDeposit;
-    uint withdrawPending;
+    bool lister; //registred in adrClients
+    uint withdrawPending; //total withdraw request
+    uint xTotalDeposit; //total deposit expressed in x value
+    uint[] xDeposit; // array of the differents deposits in x value
+    uint[] DepositLocked; // array of the differents deposits when the deposit could be withdraw
+
   }
 
   // Mapping
 
   mapping (address => Client) public user;
 
-  // client
-  mapping (uint => address) public backToUser;
-
   // Variable
 
-  // Address USDC pour le moment
 
-  IERC20 tokenAd;
+  IERC20 tokenAd; //token address accepted as
 
-  // Address contrat Staking
-  address public stacking;
+  address public stacking; //Staking contract address
 
-  // Taux d'interet
-  uint apy = 5 ;
+  uint apy = 5 ; // interest
   uint dayLock = 60 seconds;
-  uint public xLaunch;
-  // Somme Global disponible prêt à payer
-  uint totalWithdrawalAmount;
+  uint public xLaunch; // contract deployment date
+
+  uint totalWithdrawalAmount;  // Somme Global disponible prêt à payer
 
   uint public totalVotingPower;
 
@@ -65,64 +62,118 @@ contract ProxySimple is Ownable{
     xLaunch = block.timestamp;
   }
 
-  // Function déposer des fonds - parametre nombre de jours bloqué =>(nb_dayLock) et le amount
-
-
+  /// @notice Define IERC20 token address accepted as deposit
+  /// @dev restricted to the contract's owner
+  /// @param _tokenAd IERC20 the token address
   function setTokenAd (IERC20 _tokenAd) external onlyOwner{
     tokenAd=_tokenAd;
   }
 
-  function updateXprice() internal view returns(uint x){
+  /// @notice fetch the value of x, give actual value if argument equal to zero
+  /// @dev view function usefull for interest computation
+  /// @param date a epoch time to add at the current time to fetch x value in the future
+  ///@return x the value for a given date
+  function updateXprice(uint date) internal view returns(uint x){
     uint y = 1;
-    x =  y.add(((block.timestamp.sub(xLaunch)).div(31536000)).mul(apy).div(100));
+    x =  y.add((((block.timestamp.add(date)).sub(xLaunch)).div(31536000)).mul(apy).div(100));
   }
 
+  /// @notice return the client's address aray
+  /// @dev usefull as relay for sending the client addresses to a borrow.sol contract
+  /// @return array of client address
   function getAdrClients() external view returns(address[] memory) {
     return adrClients;
   }
 
+  /// @notice return client object
+  /// @dev usefull as relay for sending the client properties to a borrow.sol contract
+  /// @param _user the client address
+  /// @return client object
   function getUser(address _user) external view returns(Client memory) {
     return user[_user];
   }
+
+  /// @notice make a deposit by the user in the staking contract
+  /// @dev set a deposit lock by computation of the deposit value with interests at the unlock date
+  /// and verification when calling withdrawPending
+  /// @param amount the desired amount to deposit by the user
   function deposit (uint amount) public payable  {
-    uint x = updateXprice();
+    uint x = updateXprice(0);
     IERC20(tokenAd).transferFrom(msg.sender, stacking, amount);
-    uint DepositToX = amount.div(x);
-    user[msg.sender].xDeposit = user[msg.sender].xDeposit.add(DepositToX);
+    uint depositToX = amount.div(x);
+    user[msg.sender].xDeposit.push(depositToX);
+    user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.add(depositToX);
+    uint y = updateXprice(dayLock);
+    user[msg.sender].DepositLocked.push(depositToX.mul(y));
 
     if (user[msg.sender].lister == false) {
       adrClients.push(msg.sender);
       user[msg.sender].lister = true;
       user[msg.sender].withdrawPending = 0;
     }
+
     // Validation de l'event
-    emit valideDepot(msg.sender, amount);
+    emit valideDepot(msg.sender, amount); //MAPPING DATE D4UNLOCK ???
     // Maj des amount de dépôt
     totalVotingPower= totalVotingPower.add(amount);
   }
 
-  // Function demande de retrait - parametre amount souhaitant retirer
 
+  /// @notice make a withdraw request by the user
+  /// @dev fetch the differents deposits eligible for withdraw
+  /// and delete them from the client array if withdrawn
+  /// @param withdrawAmount the desired amount to withdraw by the user
   function withdrawPending (uint withdrawAmount) public {
-    require(withdrawAmount <= user[msg.sender].xDeposit);
+    uint x = updateXprice(0);
+    uint xWithdraw = withdrawAmount.div(x);
+    require(xWithdraw <= user[msg.sender].xTotalDeposit, "can not withdraw more than you deposited");
+    require(user[msg.sender].xDeposit[0].mul(x) >= user[msg.sender].DepositLocked[0], "the first deposit can not be unlocked now");
+    uint length = user[msg.sender].DepositLocked.length;
+    uint withdraw;
+    uint leftovers;
+    uint sumDeposit;
+    for (uint i; i < length; i++) {
+      sumDeposit = sumDeposit.add(user[msg.sender].DepositLocked[i]);
+      if (withdrawAmount >= sumDeposit) {
+        require(user[msg.sender].xDeposit[i].mul(x) >= user[msg.sender].DepositLocked[i],"can not withdraw a locked deposit");
+        withdraw = withdraw.add(i);
+      } else if (user[msg.sender].xDeposit[i].mul(x) >= user[msg.sender].DepositLocked[i]) {
+        withdraw = withdraw.add(i);
+        leftovers = sumDeposit.sub(withdrawAmount);
+      } else require(withdrawAmount <= sumDeposit.sub(user[msg.sender].DepositLocked[i]), "can not withdraw from a locked deposit");
+    }
 
     user[msg.sender].withdrawPending = user[msg.sender].withdrawPending.add(withdrawAmount);
-    user[msg.sender].xDeposit = user[msg.sender].xDeposit.sub(withdrawAmount);
+
+    for (uint i; i <= withdraw; i++) {
+      delete user[msg.sender].xDeposit[i];
+      delete user[msg.sender].DepositLocked[i];
+    }
+
+    if (leftovers > 0) {
+    uint xleftovers = leftovers.mul(x);
+    user[msg.sender].xDeposit.push(xleftovers);
+    user[msg.sender].DepositLocked.push(leftovers.mul(x));
+    }
+
+    user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.sub(xWithdraw);
     // Maj du amount Global Payement
     totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawAmount);
-
+    totalVotingPower= totalVotingPower.sub(withdrawAmount);
     // Validation de l'event
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
 
     // Maj des amount de dépôt
-    totalVotingPower = totalVotingPower.sub(withdrawAmount);
   }
 
-  // Function de Retrait
 
+  /// @notice make an effective withdraw for the user by the contract owner
+  /// @dev fetch the differents pending withdraws from the differents user and pay them
+  /// @param _address the IERC20 token address in use to payback the users
   function Withdraw (IERC20 _address) public payable onlyOwner {
     uint toPay;
     uint length = adrClients.length;
+
     // recherche de tous les clients ayant fait une demande de retrait
     for(uint i; i < length ; i++) {
       toPay = user[adrClients[i]].withdrawPending;

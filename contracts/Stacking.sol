@@ -22,14 +22,12 @@ contract Stacking is Ownable{
 receive() external payable { }
 
 /// @notice Define stacking contract address
-/// @dev
 /// @param contractAddr
 function setStackingAddress(address contractAddr) external onlyOwner {
   stacking = contractAddr ;
 }
 
 /// @notice fetch an ERC20 balance of the stacking contract
-/// @dev
 /// @param token address
 /// @return contract's balance
  function getBalance(IERC20 token) external view returns (uint) {
@@ -37,7 +35,6 @@ function setStackingAddress(address contractAddr) external onlyOwner {
  }
 
  /// @notice fetch an ERC20 token decimals
- /// @dev
  /// @param token address
  /// return decimals uint8
  function getDecimals(address token) external view returns(uint8 decimals) {
