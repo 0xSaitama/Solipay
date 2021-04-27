@@ -74,7 +74,6 @@ contract Loan is Ownable{
 //Constructor
     constructor(address _stacking, address _proxySimple) public onlyOwner{
         stacking=_stacking;
-        proxy=IProxy(_proxySimple);
         proxy = IProxy(_proxySimple);
 
     }
