@@ -33,6 +33,7 @@ function Admin({ account, setMsg }) {
   const [addr2, setAddr2] = useState('0x1f9840a85d5af5bf1d1762f925bdaddc4201f984');
   const [lpAddress, setlpAddress] = useState('0xFA73472326E0e0128E2CA6CeB1964fd77F4AE78d')
   const [addressContract, setAddressContract] = useState('0x61dcb07cf4fe59907b37455b978c277687385a8e');
+  const [proxyaddr, setProxyAddress] = useState("0x21a0BF5f05b5AAab451e0B8c6D57145cc3240942");
   const [amount, setAmount] = useState(0);
   const [amount2, setAmount2] = useState(0);
   const [outputValue, setOutputValue] = useState(0);
@@ -98,10 +99,15 @@ useEffect(() => {
     const contract = await getContract(Stacking);
     const web3 = await getWeb3();
     const addr = await contract.address;
-    await contract.methods.setStackingAddress(addressContract).send({from: account});
-
+    await contract.methods.setStackingAddress(addr).send({from: account});
     }
 
+    const setProxySimpleAddress = async () => {
+      const contract = await getContract(Stacking);
+      const web3 = await getWeb3();
+      const addr = proxyaddr;
+      await contract.methods.setProxyAddress(addr).send({from: account});
+    }
   const approveUni = async(address) => {
     const contract = await getContract(Stacking);
     const web3 = await getWeb3();
@@ -115,20 +121,23 @@ useEffect(() => {
 
     }
 
+    const approveProxy = async () => {
+      const contract = await getContract(Stacking);
+      const web3 = await getWeb3();
+      const toApprove = web3.utils.toWei("999999", 'ether');
+      const approved = await contract.methods.approveProxy(addr1, toApprove).send({ from: account }).on('error', function(error){
+        setMsg('error');
+        })
+        .then(function(tx) {
+          setMsg(`UniRouter approved ${amount}`);
+        });
 
-
-  // const balanceView = async (address) => {
-  //   const contract = await getContract(Stacking);
-  //   const web3 = await getWeb3();
-  //   const balanceCall = await contract.methods.getBalance(address).call({ from: account});
-  //   setBalance(Number(balanceCall));
-  //   setMsg(`balance actualisée : ${balance}`);
-  //   }
+      }
 
     const transfer = async() => {
       const contract = await getContract(Stacking);
       const web3 = await getWeb3();
-      const transferERC20 = await contract.methods.transferERC20(addr1,amount).send(
+      const transferERC20 = await contract.methods.transferERC20(addr1,proxyaddr,amount).send(
         {from :account}).on('error', function(error){
           setMsg('error');
           })
@@ -248,6 +257,14 @@ useEffect(() => {
                   </Typography>
                 <Typography color="secondary" gutterBottom>
                   <TextField id="standard-basic" label="AdresseTokenB" defaultValue='0x1f9840a85d5af5bf1d1762f925bdaddc4201f984' onChange={({ target }) => setAddr2(target.value)}/>
+                </Typography>
+                <Typography color="secondary" gutterBottom>
+                  <TextField id="standard-basic" label="proxyAddress" defaultValue='0x21a0BF5f05b5AAab451e0B8c6D57145cc3240942' onChange={({ target }) => setProxyAddress(target.value)}/>
+                </Typography>
+                <Typography color="secondary" gutterBottom>
+                <Button variant="contained" color="secondary" onClick={() => approveProxy()}>
+                Approve
+              </Button>
                 </Typography>
               </CardContent>
             </Card>

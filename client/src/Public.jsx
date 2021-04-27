@@ -3,11 +3,12 @@ import getWeb3 from "./getWeb3";
 import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import "./App.css";
 import ProxySimple from "./build/contracts/ProxySimple.json";
-//import ProxySimple from "";
+import Stacking from "./build/contracts/Stacking.json";
 
 const getContract = async (contract) => {
   const web3 = await getWeb3();
@@ -26,21 +27,33 @@ const getContract = async (contract) => {
 function Public({ account, setMsg }) {
   // Function deposite => params : Nbjour & montant
   const [montant, setMontant] = useState(0);
-  const [nbjour, setNbjour] = useState(0);
-
   // CI DESSOUS function retrait en attente True/False
   //const [withdrawPending, setWithdrawPending] = useState(false);
-
+  const [deposit, setDeposit] = useState(0);
   // retrait
   const [montantRetirer, setMontantRetirer] = useState(0);
 
   const [clients, setClients] = useState([]);
-  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+
+    const balanceView = async () => {
+      let contract = await getContract(ProxySimple);
+      const web3 = await getWeb3();
+      const xDeposit = await contract.methods.getUserDeposits(account).call();
+      contract = await getContract(Stacking);
+      const x = await contract.methods.updateXprice().call();
+      const depositTotal = Number(xDeposit) * Number(x);
+      setDeposit(depositTotal);
+      }
+
+    balanceView();
+
+    }, []);
 
   // FONCTION VALIDATION DE PAIMENT
   const ValidePaiment = () => {
-    console.log("NOMBRE DE JOUR ", nbjour);
-    console.log("L'OSEILE QUI A ETE MIS EN PLACE ", montant);
+    console.log("DEPOT ", montant);
   };
 
   // Fonction Retrait
@@ -48,138 +61,41 @@ function Public({ account, setMsg }) {
     console.log("----------Retrait en cours ", setMontantRetirer);
   };
 
+
   // Rappelle les ".call" c'est juste pour voir "quand la function du contrat est en view"
   // .Send c'est pour modifier l'etat de la function
   const deposite = async () => {
     const contract = await getContract(ProxySimple);
-    console.log("ligne43-----------------", deposite);
     const web3 = await getWeb3();
-    console.log("ligne45-----------------", web3);
     const depot = await contract.methods
-      .deposite(montant, nbjour)
+      .deposite(montant)
       .send({ from: account })
       .on("error", function (error) {
         setMsg("error");
       })
       .then(function (tx) {
-        setMsg(`Deposite ${(montant, nbjour)}`);
-        console.log("ligne54 ");
-        console.log("transac ligne 55", tx);
+        setMsg(`Deposite ${montant}`);
+        console.log(tx);
       });
   };
 
   // Function retrait
   const Withdraw = async () => {
     const contract = await getContract(ProxySimple);
-    console.log("-----------Ligne n° ", Withdraw);
     const web3 = await getWeb3();
-    console.log("-----------Ligne n° ", web3);
     const retirer = await contract.methods
-      .Withdraw(montantRetirer)
+      .withdrawPending(montantRetirer)
       .send({ from: account })
       .on("error", function (error) {
         setMsg("error");
       })
       .then(function (tx) {
         setMsg(`Retrait ${montantRetirer}`);
-        console.log("test ligne 81");
-        console.log("transaction ligne 82", tx);
+        console.log(tx);
       });
   };
 
-  // ---------------------------------------------
-  // Function de retrait en attente
-  //  const withdrawPending = async () => {
-  //   const contract = await getContract(ProxySimple);
-  //   console.log("ligne43-----------------", withdrawPending);
-  //   const web3 = await getWeb3();
-  //   console.log("ligne45-----------------", web3);
-  //   const depot = await contract.methods
-  //     .withdrawPending(withdrawalAmount)
-  //     .send({ from: account })
-  //     .on("error", function (error) {
-  //       setMsg("error");
-  //     })
-  //     .then(function (tx) {
-  //       setMsg(`WithdrawPending ${(withdrawalAmount}`);
-  //       console.log("ligne54 ");
-  //       console.log("transac ligne 55",tx);
-  //     });
-  // };
 
-  // call function view poour voir letat de la boockchain
-  // const deposite = async () => {
-  //   const contract = await getContract(ProxySimple);
-
-  //   console.log("ligne44-----------------",deposite)
-  //   const web3 = await getWeb3();
-
-  //   console.log("ligne47-----------------",web3)
-  //   const depot = await contract.methods
-  //     .deposite(montant, nbjour)
-  //     .send({ from: account})
-  //     .on("error", function (error) {
-  //       console.log("ligne52 ",depot)
-  //       setMsg("error");
-  //     })
-  //     .then(function (tx) {
-  //       setMsg(`Deposite ${(montant, nbjour)}`);
-  //       console.log("ligne55 ",depot) });
-  // };
-
-  // // FONCTION A  CREER
-  // const Deposite = async () => {
-  //   const contract = await getContract(Voting)
-  //   const web3 = await getWeb3()
-
-  //   await contract.methods.Deposite(montant).send({ from: account }, async function (err, tx) {
-  //       if (tx) {
-  //         console.log(tx)
-  //         await web3.eth.getTransactionReceipt(tx, async function (
-  //           err,
-  //           receipt,
-  //         ) {
-  //           console.log(receipt)
-
-  //           if (receipt.status) {
-  //             setMontant('')
-  //             setProposals([...proposals,  { description: montant, voteCount: 0 },])
-  //             setMsg('Votre proposition a été enregistrée !')
-  //           }
-  //         })
-  //       } else if (err) {
-  //         console.log(err)
-  //         setMsg('error')
-  //       }
-  //     })
-  // }
-  // FONCTION A CREER
-  // const vote = async (i) => {
-  //   const contract = await getContract(Voting)
-  //   const web3 = await getWeb3()
-
-  //   await contract.methods
-  //     .vote(i + 1)
-  //     .send({ from: account }, async function (err, tx) {
-  //       if (tx) {
-  //         console.log(tx)
-  //         await web3.eth.getTransactionReceipt(tx, async function (
-  //           err,
-  //           receipt,
-  //         ) {
-  //           console.log(receipt)
-
-  //           if (receipt.status) {
-  //             setMsg('Votre vote a été enregistré !')
-  //           }
-  //         })
-  //       } else if (err) {
-  //         console.log(err)
-  //         setMsg('error')
-  //       }
-  //     })
-  // }
-  // FRONT FFFF
   return (
     <Grid
       ClassName="principalGrid"
@@ -199,10 +115,16 @@ function Public({ account, setMsg }) {
           <h4>
             UNICEF
             <h6>
-              Faîtes un don en ligne. C'est grâce à vous que nous construisons
-              un avenir meilleur pour les enfants !
+              Faîtes un don en ligne
             </h6>
           </h4>
+        </Card>
+      </Grid>
+      <Grid item>
+        <Card>
+          <CardContent>
+            {deposit} USDC
+          </CardContent>
         </Card>
       </Grid>
       <Grid item>
@@ -220,19 +142,7 @@ function Public({ account, setMsg }) {
               style={{ paddingTop: "10px" }}
             >
               <Grid className="carte">
-                <Grid item>
-                  <h4>Nombre de nbjour d'interet ? </h4>
-                </Grid>
-                <Grid item>
-                  <input
-                    type="number"
-                    rowsMin={6}
-                    id="standard-basic"
-                    label="Adresse"
-                    onChange={({ target }) => setNbjour(target.value)}
-                  />
-                </Grid>
-                <h4 className="Montant">Montant ? </h4>
+                <h4 className="Montant">Montant</h4>
                 <Grid item>
                   <input
                     type="number"
