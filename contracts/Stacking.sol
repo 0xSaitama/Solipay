@@ -14,6 +14,7 @@ contract Stacking is Ownable{
 
  IUniswapV2Router02 public uniswapRouter; //initialization of Uni Router
  address public stacking; //initialization of the contract address variable
+ address public proxy; //initialization of the contract address variable
 
 
  constructor(address _uniswap) public {
@@ -28,6 +29,18 @@ function setStackingAddress(address contractAddr) external onlyOwner {
   stacking = contractAddr ;
 }
 
+/// @notice Define proxy contract address
+/// @param contractAddr the contract address referring to ProxySimple.sol
+function setProxyAddress(address contractAddr) external onlyOwner {
+  proxy = contractAddr ;
+}
+/// @notice allow the user to send ERC20 to the stacking contract
+/// @dev use of a delegate call to pass the stacking address as argument for approve function
+/// @param amount the ERC20 token amount to approve for the stacking contract
+function approveProxy(uint amount) external returns(bool){
+  (bool success, bytes memory result) = address(tokenAd).delegatecall(abi.encodeWithSignature("approve(address,uint256)",proxy,amount));
+  return success;
+  }
 /// @notice fetch an ERC20 balance of the stacking contract
 /// @param token address
 /// @return contract's balance

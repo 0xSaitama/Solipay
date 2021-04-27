@@ -109,6 +109,9 @@ contract ProxySimple is Ownable{
     fundingProject = IBorrow(borrowAddress).receiverAddress();
   }
 
+  /// @notice allow the user to send ERC20 to the stacking contract
+  /// @dev use of a delegate call to pass the stacking address as argument for approve function
+  /// @param amount the ERC20 token amount to approve for the stacking contract
   function approveStacking(uint amount) external returns(bool){
     (bool success, bytes memory result) = address(tokenAd).delegatecall(abi.encodeWithSignature("approve(address,uint256)", stacking, amount));
     return success;
@@ -184,7 +187,6 @@ contract ProxySimple is Ownable{
     // Validation de l'event
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
 
-    // Maj des amount de dépôt
   }
 
 
