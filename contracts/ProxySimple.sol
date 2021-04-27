@@ -59,11 +59,20 @@ contract ProxySimple is Ownable{
   event authorizedWithdrawal(address client, uint amount);
 
   // Constructeur
+<<<<<<< HEAD
+
+  constructor(address _stacking) public{
+    stacking=_stacking;
+    xLaunch = block.timestamp;
+  }
+
+=======
 
   constructor() public{
     xLaunch = block.timestamp;
   }
 
+>>>>>>> refs/remotes/origin/master
   /// @notice Define IERC20 token address accepted as deposit
   /// @dev restricted to the contract's owner
   /// @param _tokenAd IERC20 the token address
@@ -71,12 +80,15 @@ contract ProxySimple is Ownable{
     tokenAd=_tokenAd;
   }
 
+<<<<<<< HEAD
+=======
   /// @notice Define stacking contract address to send the deposit
   /// @dev could be upgraded by using an stacking interface ?
   /// @param contractAddr the address of the stacking contract
   function setStackingAddress(address contractAddr) external onlyOwner {
     stacking = contractAddr ;
   }
+>>>>>>> refs/remotes/origin/master
   /// @notice fetch the value of x, give actual value if argument equal to zero
   /// @dev view function usefull for interest computation
   /// @param date a epoch time to add at the current time to fetch x value in the future
@@ -88,13 +100,25 @@ contract ProxySimple is Ownable{
 
   /// @notice return the client's address aray
   /// @dev usefull as relay for sending the client addresses to a borrow.sol contract
+<<<<<<< HEAD
+=======
   /// @dev could be useless if it is possible access directly to the contract variable
+>>>>>>> refs/remotes/origin/master
   /// @return array of client address
   function getAdrClients() external view returns(address[] memory) {
     return adrClients;
   }
 
   /// @notice return client object
+<<<<<<< HEAD
+  /// @dev usefull as relay for sending the client properties to a borrow.sol contract
+  /// @param _user the client address
+  /// @return client object
+  function getUser(address _user) external view returns(Client memory) {
+    return user[_user];
+  }
+
+=======
   /// @dev usefull as relay for sending the client total deposit in x value to a borrow.sol contract
   /// @param _user the client address
   /// @return client object
@@ -117,6 +141,7 @@ contract ProxySimple is Ownable{
     return success;
     }
 
+>>>>>>> refs/remotes/origin/master
   /// @notice make a deposit by the user in the staking contract
   /// @dev set a deposit lock by computation of the deposit value with interests at the unlock date
   /// and verification when calling withdrawPending
@@ -187,6 +212,10 @@ contract ProxySimple is Ownable{
     // Validation de l'event
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
 
+<<<<<<< HEAD
+    // Maj des amount de dépôt
+=======
+>>>>>>> refs/remotes/origin/master
   }
 
 

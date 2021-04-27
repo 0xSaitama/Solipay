@@ -43,11 +43,15 @@ contract Loan is Ownable{
     uint numberOfEntity; */
 //    bool borrowOpen;
     WorkflowStatus public status;
+    IProxy proxy;
     address public stacking;
+<<<<<<< HEAD
+=======
     address public proxySimple;
     IProxy proxy;
     uint winningProposalId;
     address receiverAddress;
+>>>>>>> refs/remotes/origin/master
 
 //Mapping
     mapping(address => Voter) public voters;
@@ -73,7 +77,11 @@ contract Loan is Ownable{
 //Constructor
     constructor(address _stacking, address _proxySimple) public onlyOwner{
         stacking=_stacking;
+<<<<<<< HEAD
+        proxy=IProxy(_proxySimple);
+=======
         proxy = IProxy(_proxySimple);
+>>>>>>> refs/remotes/origin/master
     }
 
 
@@ -83,8 +91,13 @@ contract Loan is Ownable{
     /// @notice Records loan requests
     /// @dev
     /// @param _description Borrower motivation
+<<<<<<< HEAD
+    /// @param _amount Amount requested
+    function registerRequest(string memory _description, uint _amount) external {
+=======
     /// @param _description receiver description of the project to fund and it address
     function registerLoanRequest(string memory _description, address receiver) public onlyOwner {
+>>>>>>> refs/remotes/origin/master
 
         require(status == WorkflowStatus.LoanRequestStarted, "Not allowed");
         require(voters[msg.sender].isRegistered,"You are not registred");
@@ -97,6 +110,16 @@ contract Loan is Ownable{
     }
 
     /// @notice Records the addresses of participants
+<<<<<<< HEAD
+    /// @dev Copy the array of users to the proxy, Error with Client call in ProxySimple.sol
+    /// @param _addr proxy address
+    function setEntity(address _addr) public onlyOwner {
+      address[] memory copyTab = proxy.getAdrClients();
+
+        for(uint i; i == copyTab.length; i++) {
+  //          votes[i] = Voter(true,false,proxy.getUserDeposits(copyTab[i]),0);
+            address voterAddr = copyTab[i]; //backToUser est un getter dans ce contrat(borrow)
+=======
     /// @dev Copy the array of users to the proxy, could be upgrade without for loop
     function setEntity() public onlyOwner {
       address[] memory copyTab = proxy.getAdrClients();
@@ -104,6 +127,7 @@ contract Loan is Ownable{
         for(uint i; i < copyTab.length; i++) {
             votes[i] = Voter(true,false,proxy.getUserDeposits(copyTab[i]),0);
             address voterAddr = copyTab[i];
+>>>>>>> refs/remotes/origin/master
             voters[voterAddr] = votes[i];
         }
     }
@@ -134,7 +158,11 @@ contract Loan is Ownable{
         //require(voteCount>((votingPowerTotal/2),"pas assez de vote pour vous");
 
         uint count;
+<<<<<<< HEAD
+        uint quorum = proxy.totalVotingPower().div(2);
+=======
       //  uint quorum = ProxySimple(proxySimple).totalVotingPower.div(2);
+>>>>>>> refs/remotes/origin/master
         for(uint i; i == loans.length; i++) {
             count = loans[i].voteCount;
             if( count <= quorum){
@@ -190,10 +218,13 @@ contract Loan is Ownable{
 
         emit WorkflowStatusChange(previousStatus, status);
     }
+<<<<<<< HEAD
+=======
 
     function setWiningAddress() external onlyOwner {
       require(status == WorkflowStatus.VotesTallied);
       receiverAddress = loans[winningProposalId].receiver;
     }
 
+>>>>>>> refs/remotes/origin/master
 }
