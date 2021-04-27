@@ -60,8 +60,7 @@ contract ProxySimple is Ownable{
 
   // Constructeur
 
-  constructor(address _stacking) public{
-    stacking=_stacking;
+  constructor() public{
     xLaunch = block.timestamp;
   }
 
@@ -72,6 +71,12 @@ contract ProxySimple is Ownable{
     tokenAd=_tokenAd;
   }
 
+  /// @notice Define stacking contract address to send the deposit
+  /// @dev could be upgraded by using an stacking interface ?
+  /// @param contractAddr the address of the stacking contract
+  function setStackingAddress(address contractAddr) external onlyOwner {
+    stacking = contractAddr ;
+  }
   /// @notice fetch the value of x, give actual value if argument equal to zero
   /// @dev view function usefull for interest computation
   /// @param date a epoch time to add at the current time to fetch x value in the future
@@ -97,9 +102,18 @@ contract ProxySimple is Ownable{
     return user[_user].xTotalDeposit;
   }
 
+  /// @notice Define the project address to receive donations and funds
+  /// @dev the address is set by borrow contract before setting it here
+  /// @param borrowAddress the address of the wining project funding in borrow contract
   function setFundingProject(address borrowAddress) external onlyOwner returns(address) {
     fundingProject = IBorrow(borrowAddress).receiverAddress();
   }
+
+  function approveStacking(uint amount) external returns(bool){
+    (bool success, bytes memory result) = address(tokenAd).delegatecall(abi.encodeWithSignature("approve(address,uint256)", stacking, amount));
+    return success;
+    }
+
   /// @notice make a deposit by the user in the staking contract
   /// @dev set a deposit lock by computation of the deposit value with interests at the unlock date
   /// and verification when calling withdrawPending
