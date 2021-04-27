@@ -59,15 +59,6 @@ contract ProxySimple is Ownable{
   event authorizedWithdrawal(address client, uint amount);
 
   // Constructeur
-
-
-  constructor(address _stacking) public{
-    stacking=_stacking;
-    xLaunch = block.timestamp;
-  }
-
-
-
   constructor() public{
     xLaunch = block.timestamp;
   }
@@ -204,11 +195,6 @@ contract ProxySimple is Ownable{
     totalVotingPower= totalVotingPower.sub(withdrawAmount);
     // Validation de l'event
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
-
-<<<<<<< HEAD
-    // Maj des amount de dépôt
-=======
->>>>>>> refs/remotes/origin/master
   }
 
 
