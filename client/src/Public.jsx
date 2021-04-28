@@ -42,8 +42,7 @@ function Public({ account, setMsg }) {
       const web3 = await getWeb3();
       const accounts = await web3.eth.getAccounts();
       const xDeposit = await contract.methods.getUserDeposits(accounts[0]).call();
-      contract = await getContract(Stacking);
-      const x = await contract.methods.updateXprice().call();
+      const x = await contract.methods.updateXprice(0).call();
       const depositTotal = Number(xDeposit) * Number(x);
       setDeposit(depositTotal);
       }
