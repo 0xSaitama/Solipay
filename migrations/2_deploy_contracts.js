@@ -17,7 +17,7 @@ module.exports = async function(deployer, _network, accounts) {
 
  await deployer.deploy(Stacking, uniRouter);
  const stacking = await Stacking.deployed()
- await deployer.deploy(ProxySimple, stacking.address);
+ await deployer.deploy(ProxySimple);
  await deployer.deploy(Oracle, factory, daiAddress, uniAddress);
  //let stacking = await Stacking.deployed()
 //const oracle = await OracleSimplePair.deployed();
