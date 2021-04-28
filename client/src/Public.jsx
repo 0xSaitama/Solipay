@@ -9,6 +9,7 @@ import Typography from "@material-ui/core/Typography";
 import "./App.css";
 import ProxySimple from "./build/contracts/ProxySimple.json";
 import Stacking from "./build/contracts/Stacking.json";
+import { GridList } from "@material-ui/core";
 
 const getContract = async (contract) => {
   const web3 = await getWeb3();
@@ -36,20 +37,20 @@ function Public({ account, setMsg }) {
   const [clients, setClients] = useState([]);
 
   useEffect(() => {
-
     const balanceView = async () => {
       let contract = await getContract(ProxySimple);
       const web3 = await getWeb3();
       const accounts = await web3.eth.getAccounts();
-      const xDeposit = await contract.methods.getUserDeposits(accounts[0]).call();
+      const xDeposit = await contract.methods
+        .getUserDeposits(accounts[0])
+        .call();
       const x = await contract.methods.updateXprice(0).call();
       const depositTotal = Number(xDeposit) * Number(x);
       setDeposit(depositTotal);
-      }
+    };
 
     balanceView();
-
-    }, []);
+  }, []);
 
   // FONCTION VALIDATION DE PAIMENT
   const ValidePaiment = () => {
@@ -61,14 +62,13 @@ function Public({ account, setMsg }) {
     console.log("----------Retrait en cours ", setMontantRetirer);
   };
 
-
   // Rappelle les ".call" c'est juste pour voir "quand la function du contrat est en view"
   // .Send c'est pour modifier l'etat de la function
   const deposite = async () => {
     const contract = await getContract(ProxySimple);
     const web3 = await getWeb3();
     const depot = await contract.methods
-      .deposite(montant)
+      .deposit(montant)
       .send({ from: account })
       .on("error", function (error) {
         setMsg("error");
@@ -95,37 +95,37 @@ function Public({ account, setMsg }) {
       });
   };
 
-
   return (
-    <Grid
-      ClassName="principalGrid"
-      direction="column"
-      container
-      spacing={3}
-      style={{ padding: "100px" }}
-    >
-      <Grid item>
-        <a href="/admin">Vous etes sur le public </a>
+    <Grid ClassName="principalGrid">
+      <Grid ClassName="logo">
+        <img width="208" src="solipay.png" href="." alt="solipay-Logo" />
       </Grid>
-      <Grid item>
-        <h4>Aider l'association du moment </h4>
+      <Grid ClassName="basculer">
+        <a href="/admin">Move towards Admin </a>
       </Grid>
-      <Grid item>
-        <Card className="association">
-          <h4>
-            UNICEF
-            <h6>
-              Faîtes un don en ligne
-            </h6>
-          </h4>
-        </Card>
+
+      <Grid ClassName="Aider">
+        <h4>Help an association </h4>
       </Grid>
+
+      <Grid className="unicef">
+        <h3>
+          UNICEF <br></br>
+          <br></br>
+          Make a donation
+        </h3>
+
+        <Grid ClassName="imageUni">
+          <img width="308" src="unicef.png" href="." alt="logo association " />
+        </Grid>
+      </Grid>
+
       <Grid item>
-        <Card>
-          <CardContent>
-            {deposit} USDC
-          </CardContent>
-        </Card>
+        <Grid className="usdc">
+          {" "}
+          the amounts deposited <br></br>
+          {deposit} USDC
+        </Grid>
       </Grid>
       <Grid item>
         <form noValidate autoComplete="off">
@@ -135,62 +135,57 @@ function Public({ account, setMsg }) {
             spacing={3}
             style={{ paddingTop: "100px" }}
           >
-            <Card
-              direction="column"
-              container
-              spacing={3}
-              style={{ paddingTop: "10px" }}
-            >
-              <Grid className="carte">
-                <h4 className="Montant">Montant</h4>
-                <Grid item>
-                  <input
-                    type="number"
-                    rowsMin={6}
-                    id="standard-basic"
-                    label="Adresse"
-                    onChange={({ target }) => setMontant(target.value)}
-                  />
-                </Grid>
+            <Grid className="carte">
+              Amount you would like to deposit
+              <Grid>
+                {" "}
                 <br></br>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => deposite()}
-                  >
-                    ValidePaiment
-                  </Button>
-                </Grid>
-                <br></br>
-                montant à retirer
-                <Grid item>
-                  <input
-                    type="number"
-                    rowsMin={6}
-                    id="standard-basic"
-                    label="Adresse"
-                    onChange={({ target }) => setMontantRetirer(target.value)}
-                  />
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => Withdraw()}
-                  >
-                    Retrait
-                  </Button>
-                </Grid>
-                <br></br>
-                <br></br>
+                <input
+                  type="number"
+                  rowsMin={6}
+                  id="standard-basic"
+                  label="Adresse"
+                  onChange={({ target }) => setMontant(target.value)}
+                />
               </Grid>
-            </Card>
+              <br></br>
+              <Grid>
+                <Button
+                  variant="contained"
+                  color="red"
+                  onClick={() => deposite()}
+                >
+                  validate the payment
+                </Button>
+              </Grid>
+              <br></br>
+              Withdrawal request
+              <Grid item>
+                <br></br>
+                <input
+                  type="number"
+                  rowsMin={6}
+                  id="standard-basic"
+                  label="Adresse"
+                  onChange={({ target }) => setMontantRetirer(target.value)}
+                />
+              </Grid>
+              <Grid item>
+                <br></br>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => Withdraw()}
+                >
+                  Send request
+                </Button>
+              </Grid>
+              <br></br>
+              <br></br>
+            </Grid>
           </Grid>
         </form>
       </Grid>
-
-      <Grid item style={{ marginTop: 100 }}></Grid>
     </Grid>
   );
 }
