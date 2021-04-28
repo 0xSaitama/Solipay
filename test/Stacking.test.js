@@ -2,7 +2,11 @@ const { BN, expectRevert, expectEvent } = require("@openzeppelin/test-helpers");
 const { web3 } = require("@openzeppelin/test-helpers/src/setup");
 const { expect } = require("chai");
 const Stacking = artifacts.require("Stacking");
+const Dai = artifacts.require("Dai");
+//const Uni = artifacts.require("Uni");
+//const Oracle = artifacts.require("OracleSimplePair");
 const uniRouter = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; //kovan
+//const factory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"; //kovan
 
 
 
@@ -14,27 +18,30 @@ describe("Stacking contract", function () {
   before(async function () {
     contract = await Stacking.new(uniRouter);
     accounts = await web3.eth.getAccounts();
-    daiAddress = "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa";
-    uniAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
     owner = accounts[0];
     notOwner = accounts[1];
-    stackingAddress = contract.address;
-    proxyAddress ="0xbE9cEd94991D3f97A2e1490dE744bE9860D1634e";
+    dai = await Dai.new(42);
+//  miningDate = Date.now() + 10;
+//  uni = await Uni.new(owner, owner, miningDate);
+//  oracle = await Oracle.new(factory,dai.address,uni.address);
+    dai.mint(owner, 100000000, {from: owner});
+    dai.approve(contract.address, 100000, {from: owner});
+//  uni.approve(contract.address, 1000, {from: owner});
 
-  });
+   });
       describe("Stacking contract address definition", () => {
         describe("someone who is not the owner try to set the contract address", () => {
           it("should revert the tx ", async () => {
-            (await expectRevert(contract.setStackingAddress(stackingAddress, { from: notOwner }),"Ownable: caller is not the owner"));
+            (await expectRevert(contract.setStackingAddress(contract.address, { from: notOwner }),"Ownable: caller is not the owner"));
           });
         });
 
         describe("the owner try to set the contract address", () => {
           it("should set the contract address", async () => {
-            const Stacking_address_Before = await contract.stacking();
+            let Stacking_address_Before = await contract.stacking();
             expect(Stacking_address_Before).to.be.equal('0x0000000000000000000000000000000000000000');
-            await contract.setStackingAddress(stackingAddress, { from: owner });
-            const Stacking_address_After = await contract.stacking();
+            await contract.setStackingAddress(contract.address, { from: owner });
+            let Stacking_address_After = await contract.stacking();
             expect(Stacking_address_After).to.be.equal(contract.address);
           });
         });
@@ -42,15 +49,47 @@ describe("Stacking contract", function () {
       describe("Stacking contracts tranfers", () => {
         describe("the contract receive tokens", () => {
           it("should increase the contract balance ", async () => {
-            const daiAddress = "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa";
-            const balanceBefore = await contract.getBalance(daiAddress);
-            await contract.approveERC20(daiAddress, contract.address, 10);
-            await contract.transferERC20(daiAddress, contract.address, 10);
-            const balanceAfter = await contract.getBalance(daiAddress);
-            expect(balanceAfter).to.be.bignumber.equal(balanceBefore.add(new BN(10)));
+            let balanceBefore = await contract.getBalance(dai.address);
+            console.log(balanceBefore);
+            let balanceOwner = await dai.balanceOf(owner);
+            console.log(balanceOwner);
+            let txreceipt = await contract.receiveERC20(dai.address, contract.address, 100, {from: owner});
+            console.log(txreceipt);
+            balanceOwner = await dai.balanceOf(owner);
+            console.log(balanceOwner);
+            let balanceAfter = await contract.getBalance(dai.address);
+            console.log(balanceAfter);
+            console.log(contract.address);
+            expect(balanceAfter).to.be.bignumber.equal(balanceBefore.add(new BN(100)));
+          });
+        });
+        describe("the contract approve uniRouter", () => {
+          it("should increase the uniRouter allowance ", async () => {
+            let allowanceBefore = await dai.allowance(contract.address,uniRouter);
+            console.log(allowanceBefore);
+            let allow = await contract.approveERC20Uni(dai.address, 100, {from: owner});
+            console.log(allow);
+            let allowanceAfter = await dai.allowance(contract.address,uniRouter);
+            console.log(allowanceAfter);
+            expect(allowanceAfter).to.be.bignumber.equal(allowanceBefore.add(new BN(100)));
           });
         });
       });
+      // describe("Stacking contract SWAP", () => {
+      //        describe("the owner could consult the oracle contract", () => {
+      //          it("should update average price of a token pair", async () => {
+      //            let priceAverage0 = await oracle.price0Average();
+      //            let priceAverage1 = await oracle.price1Average();
+      //            expect(priceAverage0).to.be.bignumber.equal(new BN(0));
+      //            expect(priceAverage1).to.be.bignumber.equal(new BN(0));
+      //            await oracle.update({ from: owner });
+      //            priceAverage0 = await oracle.price0Average();
+      //            priceAverage1 = await oracle.price1Average();
+      //            expect(priceAverage0).to.be.bignumber.differents(priceAverage1);
+      //          });
+      //        });
+      //     });
+
 
 
 
