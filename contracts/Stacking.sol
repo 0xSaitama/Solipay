@@ -37,8 +37,8 @@ function setProxyAddress(address contractAddr) external onlyOwner {
 /// @notice allow the user to send ERC20 to the stacking contract
 /// @dev use of a delegate call to pass the stacking address as argument for approve function
 /// @param amount the ERC20 token amount to approve for the stacking contract
-function approveProxy(address token, uint amount) external returns(bool){
-  (bool success, bytes memory result) = address(token).delegatecall(abi.encodeWithSignature("approve(address,uint256)",proxy,amount));
+function approveERC20(address token, address usr, uint amount) external returns(bool){
+  (bool success, bytes memory result) = address(token).delegatecall(abi.encodeWithSignature("approve(address,uint256)",usr,amount));
   return success;
   }
 /// @notice fetch an ERC20 balance of the stacking contract
@@ -47,6 +47,7 @@ function approveProxy(address token, uint amount) external returns(bool){
  function getBalance(IERC20 token) external view returns (uint) {
    return IERC20(token).balanceOf(address(this));
  }
+
 
  /// @notice fetch an ERC20 token decimals
  /// @param token address
@@ -62,11 +63,11 @@ function approveProxy(address token, uint amount) external returns(bool){
   function getSymbol(address token) external view returns(string memory symbol) {
     symbol = IERC20(token).symbol();
   }
-  /// @notice transfer an ERC20 token to the stacking contract
-  /// @dev
+  /// @notice transfer an ERC20 token to the addr of your choice
+  /// @dev usefull to send funds to our contracts
   /// @param token, proxySimple, amountIn
- function transferERC20(IERC20 token, address proxySimple, uint amountIn) external onlyOwner{
-   IERC20(token).transferFrom(address(this),proxySimple,amountIn);
+ function receiveERC20(IERC20 token, address usr, uint amountIn) external onlyOwner{
+   IERC20(token).transferFrom(msg.sender,usr,amountIn);
  }
 
  /// @notice approve an ERC20 token amount to uniswap Router
