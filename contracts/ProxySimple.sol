@@ -25,7 +25,6 @@ contract ProxySimple is Ownable{
     uint xTotalDeposit; //total deposit expressed in x value
     uint[] xDeposit; // array of the differents deposits in x value
     uint[] DepositLocked; // array of the differents deposits when the deposit could be withdraw
-
   }
 
   // Mapping
@@ -40,7 +39,7 @@ contract ProxySimple is Ownable{
   address public stacking; //Staking contract address
 
   uint apy = 5 ; // interest
-  uint dayLock = 60 seconds;
+  uint secondLock = 10000000;
   uint public xLaunch; // contract deployment date
 
   uint totalWithdrawalAmount;  // Somme Global disponible prêt à payer
@@ -63,6 +62,11 @@ contract ProxySimple is Ownable{
     xLaunch = block.timestamp;
   }
 
+  //pour test
+  function transferProxy(IERC20 token, address sender, address recipient, uint amount) external onlyOwner{
+    IERC20(token).transferFrom(sender, recipient, amount);
+  }
+
   /// @notice Define IERC20 token address accepted as deposit
   /// @dev restricted to the contract's owner
   /// @param _tokenAd IERC20 the token address
@@ -83,8 +87,8 @@ contract ProxySimple is Ownable{
   /// @param date a epoch time to add at the current time to fetch x value in the future
   ///@return x the value for a given date
   function updateXprice(uint date) public view returns(uint x){
-    uint y = 1;
-    x =  y.add((((block.timestamp.add(date)).sub(xLaunch)).div(31536000)).mul(apy).div(100));
+    uint z = 1000000;
+    x = z.add((((block.timestamp.add(date)).sub(xLaunch)).mul(z).div(31536000)).mul(apy).div(100));
   }
 
   /// @notice return the client's address aray
@@ -131,13 +135,17 @@ contract ProxySimple is Ownable{
   /// and verification when calling withdrawPending
   /// @param amount the desired amount to deposit by the user
   function deposit (uint amount) public payable  {
+    require(amount > 0, "impossible de déposer 0");
     uint x = updateXprice(0);
+    uint z = 1000000;
     IERC20(tokenAd).transferFrom(msg.sender, stacking, amount);
-    uint depositToX = amount.div(x);
+    uint depositToX = (amount.mul(z)).div(x);//
+    //uint depositToX = amount.div(x);
     user[msg.sender].xDeposit.push(depositToX);
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.add(depositToX);
-    uint y = updateXprice(dayLock);
-    user[msg.sender].DepositLocked.push(depositToX.mul(y));
+    uint y = updateXprice(secondLock);
+    uint lockedAmount =(depositToX.mul(y)).div(z);
+    user[msg.sender].DepositLocked.push(lockedAmount);
 
     if (user[msg.sender].lister == false) {
       adrClients.push(msg.sender);
@@ -148,50 +156,76 @@ contract ProxySimple is Ownable{
     // Validation de l'event
     emit valideDepot(msg.sender, amount); //MAPPING DATE D4UNLOCK ???
     // Maj des amount de dépôt
-    totalVotingPower= totalVotingPower.add(amount);
+    totalVotingPower= totalVotingPower.add(lockedAmount);
   }
 
+
+  function deleteUserDeposits(address usr, uint to, uint long) internal {
+        uint lastIndex = long.sub(1);
+        uint diff = lastIndex.sub(to);
+        for (uint i; i < diff ; i++) {
+          uint j = i.add(to).add(1);
+          user[usr].xDeposit[i] = user[usr].xDeposit[j];
+          user[usr].DepositLocked[i] = user[usr].DepositLocked[j];
+          }
+          for (uint i; i <= to ; i++) {
+          user[usr].xDeposit.pop();
+          user[usr].DepositLocked.pop();
+        }
+      }
 
   /// @notice make a withdraw request by the user
   /// @dev fetch the differents deposits eligible for withdraw
   /// and delete them from the client array if withdrawn
   /// @param withdrawAmount the desired amount to withdraw by the user
-  function withdrawPending (uint withdrawAmount) public {
+  function wantWithdraw (uint withdrawAmount) public returns(uint){
     uint x = updateXprice(0);
-    uint xWithdraw = withdrawAmount.div(x);
+    uint z = 1000000;
+    uint xWithdraw = withdrawAmount.mul(z).div(x);
     require(xWithdraw <= user[msg.sender].xTotalDeposit, "can not withdraw more than you deposited");
-    require(user[msg.sender].xDeposit[0].mul(x) >= user[msg.sender].DepositLocked[0], "the first deposit can not be unlocked now");
-    uint length = user[msg.sender].DepositLocked.length;
+    uint deposit0 = (user[msg.sender].xDeposit[0]).mul(x).div(z);
+    require(deposit0  >= user[msg.sender].DepositLocked[0], "the first deposit can not be unlocked now");
+    uint length = (user[msg.sender].DepositLocked).length;
     uint withdraw;
     uint leftovers;
     uint sumDeposit;
     for (uint i; i < length; i++) {
       sumDeposit = sumDeposit.add(user[msg.sender].DepositLocked[i]);
+      uint depositI = (user[msg.sender].xDeposit[i]).mul(x).div(z);
       if (withdrawAmount >= sumDeposit) {
-        require(user[msg.sender].xDeposit[i].mul(x) >= user[msg.sender].DepositLocked[i],"can not withdraw a locked deposit");
-        withdraw = withdraw.add(i);
-      } else if (user[msg.sender].xDeposit[i].mul(x) >= user[msg.sender].DepositLocked[i]) {
-        withdraw = withdraw.add(i);
+        require(depositI >= user[msg.sender].DepositLocked[i],"can not withdraw a locked deposit");
+        withdraw = i;
+      } else if (withdrawAmount < sumDeposit && depositI >= user[msg.sender].DepositLocked[i]) {
+        withdraw = i;
         leftovers = sumDeposit.sub(withdrawAmount);
-      } else require(withdrawAmount <= sumDeposit.sub(user[msg.sender].DepositLocked[i]), "can not withdraw from a locked deposit");
+      } else {
+        uint overDeposit = sumDeposit.sub(user[msg.sender].DepositLocked[i]);
+        require (withdrawAmount <= overDeposit, "can not withdraw from a locked deposit");
+        }
     }
+
 
     user[msg.sender].withdrawPending = user[msg.sender].withdrawPending.add(withdrawAmount);
+    address usr = msg.sender;
 
-    for (uint i; i <= withdraw; i++) {
-      delete user[msg.sender].xDeposit[i];
-      delete user[msg.sender].DepositLocked[i];
-    }
+    deleteUserDeposits(usr,withdraw,length);
 
-    if (leftovers > 0) {
-    uint xleftovers = leftovers.mul(x);
-    user[msg.sender].xDeposit.push(xleftovers);
-    user[msg.sender].DepositLocked.push(leftovers.mul(x));
+     if (leftovers > 0) {
+      uint xleftovers = leftovers.mul(z).div(x);
+      user[msg.sender].xDeposit.push(xleftovers);
+      user[msg.sender].DepositLocked.push(xleftovers);
+      uint newLenght = user[msg.sender].xDeposit.length;
+      for (uint i = newLenght.sub(1); i > 0; i--) {
+        uint j = i.sub(1);
+        user[msg.sender].xDeposit[i] = user[msg.sender].xDeposit[j];
+        user[msg.sender].DepositLocked[i] = user[msg.sender].DepositLocked[j];
+      }
     }
 
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.sub(xWithdraw);
-    // Maj du amount Global Payement
+     // Maj du amount Global Payement
     totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawAmount);
+    IERC20(tokenAd).approve(msg.sender, 999999999999999999999); // PROBLEME APPROVE
     totalVotingPower= totalVotingPower.sub(withdrawAmount);
     // Validation de l'event
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
@@ -201,7 +235,7 @@ contract ProxySimple is Ownable{
   /// @notice make an effective withdraw for the user by the contract owner
   /// @dev fetch the differents pending withdraws from the differents user and pay them
   /// @param _address the IERC20 token address in use to payback the users
-  function Withdraw (IERC20 _address) public payable onlyOwner {
+  function withdraw (IERC20 _address) public payable onlyOwner {
     uint toPay;
     uint length = adrClients.length;
 
