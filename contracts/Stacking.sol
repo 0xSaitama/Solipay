@@ -7,14 +7,19 @@ import "@uniswap/v2-periphery/contracts/interfaces/IERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./interfaces/IBorrow.sol";
 
 
 contract Stacking is Ownable{
   using SafeMath for uint;
 
+
+ uint8 projectRevenue;
  IUniswapV2Router02 public uniswapRouter; //initialization of Uni Router
  address public stacking; //initialization of the contract address variable
  address public proxy; //initialization of the contract address variable
+
+event LPsended(address owner, uint amount);
 
 
  constructor(address _uniswap) public {
@@ -34,6 +39,12 @@ function setStackingAddress(address contractAddr) external onlyOwner {
 function setProxyAddress(address contractAddr) external onlyOwner {
   proxy = contractAddr ;
 }
+
+/// @notice Define the pourcentage of teh total balance allocated to project funding
+/// @param pourcentage the amount to divide by 100 when sending funds to projects
+function setProjectRevenue(uint8 pourcentage) external onlyOwner {
+  projectRevenue = pourcentage ;
+}
 /// @notice allow the user to send ERC20 to the stacking contract
 /// @dev use of a delegate call to pass the stacking address as argument for approve function
 /// @param amount the ERC20 token amount to approve for the stacking contract
@@ -44,7 +55,7 @@ function approveERC20(address token, address usr, uint amount) external returns(
 /// @notice fetch an ERC20 balance of the stacking contract
 /// @param token address
 /// @return contract's balance
- function getBalance(IERC20 token) external view returns (uint) {
+ function getBalance(IERC20 token) public view returns (uint) {
    return IERC20(token).balanceOf(address(this));
  }
 
@@ -63,6 +74,7 @@ function approveERC20(address token, address usr, uint amount) external returns(
   function getSymbol(address token) external view returns(string memory symbol) {
     symbol = IERC20(token).symbol();
   }
+
   /// @notice transfer an ERC20 token to the addr of your choice
   /// @dev usefull to send funds to our contracts
   /// @param token, proxySimple, amountIn
@@ -70,6 +82,14 @@ function approveERC20(address token, address usr, uint amount) external returns(
    IERC20(token).transferFrom(msg.sender,usr,amountIn);
  }
 
+ /// @notice send ERC20 tokens to voted projects for fundings
+ /// @dev multiplied by a state variable then divided by 100 as a pourcentage
+ /// @param token, vote, usr the erc20 token address and project to fund address
+ function fooProjects(IERC20 token, address voteContract) external onlyOwner {
+   address toFund = IBorrow(voteContract).receiverAddress();
+   uint rewards = getBalance(token).mul(projectRevenue).div(100);
+  IERC20(token).transfer(toFund,rewards);
+ }
  /// @notice approve an ERC20 token amount to uniswap Router
  /// @dev function restricted to the owner of the contract
  /// @param token, amountIn
@@ -77,6 +97,11 @@ function approveERC20(address token, address usr, uint amount) external returns(
  function approveERC20Uni(IERC20 token, uint amountIn) onlyOwner external returns(uint){
    IERC20(token).approve(address(uniswapRouter), amountIn);
    return amountIn;
+ }
+
+ function sendLP(address lpToken, address owner, uint amount) external onlyOwner {
+   IERC20(lpToken).transfer(owner, amount);
+   emit LPsended(owner, amount);
  }
  /// @notice swap ERC20 tokens with an exact input to a desired ouput
  /// @dev an output minimum amount is required as parameter,
