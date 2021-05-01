@@ -56,7 +56,7 @@ contract ProxySimple is Ownable{
 
   event valideDepot(address client, uint amount);
   event authorizedWithdrawal(address client, uint amount);
-
+  event withdrawn(uint amount);
   // Constructeur
   constructor() public{
     xLaunch = block.timestamp;
@@ -91,6 +91,9 @@ contract ProxySimple is Ownable{
     x = z.add((((block.timestamp.add(date)).sub(xLaunch)).mul(z).div(31536000)).mul(apy).div(100));
   }
 
+  function totalWithdraw() external view returns(uint) {
+    return totalWithdrawalAmount;
+  }
   /// @notice return the client's address aray
   /// @dev usefull as relay for sending the client addresses to a borrow.sol contract
   /// @dev could be useless if it is possible access directly to the contract variable
@@ -205,7 +208,7 @@ contract ProxySimple is Ownable{
     }
 
 
-    user[msg.sender].withdrawPending = user[msg.sender].withdrawPending.add(withdrawAmount);
+    user[msg.sender].withdrawPending += withdrawAmount; //user[msg.sender].withdrawPending.add(withdrawAmount);
     address usr = msg.sender;
 
     deleteUserDeposits(usr,withdraw,length);
@@ -224,8 +227,8 @@ contract ProxySimple is Ownable{
 
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.sub(xWithdraw);
      // Maj du amount Global Payement
-    totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawAmount);
-    IERC20(tokenAd).approve(msg.sender, 999999999999999999999); // PROBLEME APPROVE
+    totalWithdrawalAmount += withdrawAmount;
+    IERC20(tokenAd).approve(msg.sender, withdrawAmount); // PROBLEME APPROVE
     totalVotingPower= totalVotingPower.sub(withdrawAmount);
     // Validation de l'event
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
@@ -238,14 +241,18 @@ contract ProxySimple is Ownable{
   function withdraw (IERC20 _address) public payable onlyOwner {
     uint toPay;
     uint length = adrClients.length;
-
+    uint sumWithdraw;
     // recherche de tous les clients ayant fait une demande de retrait
     for(uint i; i < length ; i++) {
-      toPay = user[adrClients[i]].withdrawPending;
-      IERC20(_address).transferFrom(address(this), adrClients[i], toPay);
-      //Maj du totalWithdrawalAmount
-      totalWithdrawalAmount = totalWithdrawalAmount.sub(toPay);
-      user[adrClients[i]].withdrawPending = 0;
+      address usr =  adrClients[i];
+      toPay = user[usr].withdrawPending;
+      sumWithdraw += toPay;
+      require(sumWithdraw <= totalWithdrawalAmount, "too much Withdraw");
+      IERC20(_address).transfer(usr, toPay);
+      user[usr].withdrawPending = 0;
     }
+    emit withdrawn(totalWithdrawalAmount);
+    //Maj du totalWithdrawalAmount
+    totalWithdrawalAmount = 0;
   }
 }

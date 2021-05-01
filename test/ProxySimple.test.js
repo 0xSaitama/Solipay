@@ -194,16 +194,20 @@ describe("ProxySimple contract", function() {
     describe('withdraw par le owner', () => {
       it('on devrait voir le solde de userlisted augmenter', async () => {
         time.increase(time.duration.years(1));
+
         await contract.transferProxy(erc20.address, owner, contract.address, 1000000, {from: owner});
         await contract.wantWithdraw(500, { from: userlisted });
         let withdrawPendingNumber = (await contract.getUser(userlisted)).withdrawPending;
         console.log(withdrawPendingNumber);
+        let allow = await erc20.allowance(contract.address, userlisted);
+        console.log(allow.toString());
+        let total = await contract.totalWithdraw();
+        console.log(total.toString());
 
-
-        let balanceBefore = erc20.balanceOf(userlisted);
-        await contract.withdraw(erc20address, { from: owner });
-        let stackingSolBalanceAfter = erc20.balanceOf(userlisted);
-        expect(apres).to.be.bignumber.equal(avant.add((withdrawPendingNumber)));
+        let balanceBefore = await erc20.balanceOf(userlisted);
+        await contract.withdraw(erc20.address, { from: owner });
+        let balanceAfter = await erc20.balanceOf(userlisted);
+        expect(balanceAfter).to.be.bignumber.equal(balanceBefore.add(new BN(withdrawPendingNumber)));
       });
     });
 
