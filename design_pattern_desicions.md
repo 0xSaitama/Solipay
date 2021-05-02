@@ -18,7 +18,7 @@ This section explains why we chose the design patterns we are using in the code.
     - [ ] **Pull over Push**: Shift the risk associated with transferring ether to the user.
     - [x] Emergency Stop: Add an option to disable critical contract functionality in case of an emergency.
 - Upgradeability Patterns
-    - [ ] Proxy Delegate: Introduce the possibility to upgrade smart contracts without breaking any dependencies.
+    - [x] Proxy Delegate: Introduce the possibility to upgrade smart contracts without breaking any dependencies.
     - [ ] Eternal Storage: Keep contract storage after a smart contract upgrade.
 - Economic Patterns
     - [ ] String Equality Comparison: Check for the equality of two provided strings in a way that minimizes average gas consumption for a large number of different inputs.
@@ -31,17 +31,19 @@ This section explains why we chose the design patterns we are using in the code.
 
 Through the use of several **modifiers** and **requires**, we verify that functions are properly called by checking data validation. For example in borrow.sol :
 
+```
 modifier isRegistred {
   require(voters[msg.sender].isRegistered == true, "unregistred");
   _;
 }
-
+```
 
 ## State Machine
 
 **Borrow** contract use state mutability for some function's accessibility. Those states are represented by a WorkflowStatus variable status.
 status variable is consulted by the Guard Check and modified only by the contract's owner with a function nextStep() designed to this purpose :
 
+```
 function nextStep() external onlyOwner {
     WorkflowStatus previousStatus = status;
 
@@ -69,6 +71,7 @@ function nextStep() external onlyOwner {
 
     emit WorkflowStatusChange(previousStatus, status);
 }
+```
 
 ## Oracle
 
@@ -78,6 +81,7 @@ This decentralized oracle rely on uniswap oracle design. It fetch price from poo
 
 Computing the average price over these data points gives‘fixed windows’, which can be updated after the lapse of each period.
 
+```
 contract OracleSimplePair {
     using FixedPoint for *;
 
@@ -97,6 +101,7 @@ As define in the **Guard Check** section, all of our contracts grant contract's 
 function setProjectRevenue(uint8 pourcentage) external onlyOwner {
   projectRevenue = pourcentage ;
 }
+```
 
 ## Checks Effects Interactions
 
@@ -120,7 +125,7 @@ our **proxySimple Contract** purpose is to link our customer to decentralized fi
 
 we tried to let our contracts deployment independant as possible. This is why, when needed, *the owner can define the contract addresses* from some functions like (e.g stacking.sol):
 
-
+```
 /// @notice Define stacking contract address
 /// @param contractAddr the contract address referring to stacking.sol
 function setStackingAddress(address contractAddr) external onlyOwner {
@@ -132,28 +137,34 @@ function setStackingAddress(address contractAddr) external onlyOwner {
 function setProxyAddress(address contractAddr) external onlyOwner {
   proxy = contractAddr ;
 }
+```
 
 ## Eternal Storage
 
 We anticipated that **proxySimple Contract** and **borrow Contract** would be versioned. For ProxySimple contract, totalVotingPower, client's data like addresses and their total deposit are stored and could be transferred to an other contract by using IProxy :
 
+```
 interface IProxy {
   function totalVotingPower() external view returns(uint);
   function getAdrClients() external view returns(address[] memory);
   function getUserDeposits(address addr) external view returns(uint);
 }
+```
 
 For Borrow contract, the winning project addresses are transferred by using IBorrow :
 
+```
 interface IBorrow {
   function receiverAddress() external view returns(address);
 }
+```
 
 ## Tight Variable Packing
 
 
 Variables order in our structs is build to pack various variables sizes :
 
+```
 IUniswapV2Pair immutable pair;
 address public immutable token0;
 address public immutable token1;
@@ -163,11 +174,13 @@ uint    public price1CumulativeLast;
 uint32  public blockTimestampLast;
 FixedPoint.uq112x112 public price0Average;
 FixedPoint.uq112x112 public price1Average;
+```
 
 ## Memory Array Building
 
 In order to save gaz, we use systematically the **view** attribute for all our getters :
 
+```
 /// @notice fetch the value of x, give actual value if argument equal to zero
 /// @dev view function usefull for interest computation
 /// @param date a epoch time to add at the current time to fetch x value in the future
@@ -176,11 +189,13 @@ function updateXprice(uint date) public view returns(uint x){
   uint z = 1000000;
   x = z.add((((block.timestamp.add(date)).sub(xLaunch)).mul(z).div(31536000)).mul(apy).div(100));
 }
+```
 
 On the other hand, to keep saving gaz, we prefer using **mapping** in order to avoid using loops. However we did'nt achieve to avoiding loops since user deposits are stored in arrays. We make use of *for* loop only. Those loops are designed to *update differents variables* in each loop or act like *Guard Check* (e.g ProxySimple) :
 
 For instance we check, by looping, the legitimacy of a withdraw request and the number of deposits we have to delete if the withdraw request is accepted :
 
+```
 for (uint i; i < length; i++) {
   sumDeposit = sumDeposit.add(user[msg.sender].DepositLocked[i]);
   uint depositI = (user[msg.sender].xDeposit[i]).mul(x).div(z);
@@ -195,3 +210,4 @@ for (uint i; i < length; i++) {
     require (withdrawAmount <= overDeposit, "can not withdraw from a locked deposit");
     }
 }
+```
