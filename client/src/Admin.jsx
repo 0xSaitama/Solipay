@@ -10,6 +10,7 @@ import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
+import AdminVoting from "./AdminVoting";
 
 import getMessageError from "./getMessageError";
 import { rgbToHex } from "@material-ui/core";
@@ -272,12 +273,16 @@ function Admin({ account, setMsg }) {
 
   return (
 
-    
+ // VIEW   
     <Grid ClassName="admine">
       <div>
         <Grid item>
           <a href="/">Jump_To_Public</a>
         </Grid>
+        <Grid item>
+          <a href="/adminvoting">Go To Admin Voting</a>
+        </Grid>
+        
         <h2>Control Office </h2>
         <form noValidate autoComplete="off">
           <div ClassName="TokenPair">

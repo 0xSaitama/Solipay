@@ -11,6 +11,8 @@ import Snackbar from '@material-ui/core/Snackbar';
 import "./App.css";
 import Admin from "./Admin";
 import Public from "./Public";
+import UserVoting from "./UserVoting"
+import AdminVoting from "./AdminVoting"
 
 const CHAIN_ID = 42;
 
@@ -50,6 +52,8 @@ function App() {
           <Route path="/admin">
             <Admin account={account} setMsg={setMsg} />
           </Route>
+          <Route exact path="/adminvoting" component = {AdminVoting}/>
+          <Route exact path="/uservoting" component = {UserVoting}/>
         </Switch>
       </Router>
       <Snackbar autoHideDuration={6000} open={!!msg} onClose={() => setMsg(null)} message={msg}/>
