@@ -86,6 +86,7 @@ contract OracleSimplePair {
     using FixedPoint for *;
 
     uint public constant PERIOD = 24 hours;
+```
 
 ## Randomness
 
@@ -95,7 +96,7 @@ Our Dapp doesn't need any random data.
 
 As define in the **Guard Check** section, all of our contracts grant contract's owner address access to certain functions (e.g in Stacking.sol) :
 
-
+```
 /// @notice Define the pourcentage of teh total balance allocated to project funding
 /// @param pourcentage the amount to divide by 100 when sending funds to projects
 function setProjectRevenue(uint8 pourcentage) external onlyOwner {
