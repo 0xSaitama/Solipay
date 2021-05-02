@@ -50,3 +50,13 @@ uint y = updateXprice(timeLock);
 uint lockedAmount =(depositToX.mul(y)).div(z);
 user[msg.sender].DepositLocked.push(lockedAmount);
 ```
+So when the user call a withdraw request we check with a require if the deposit amount multipied by actual X price is equal or superior to the amount calculated during deposit :
+
+```
+uint x = updateXprice(0);
+uint z = 1000000;
+uint xWithdraw = withdrawAmount.mul(z).div(x);
+require(xWithdraw <= user[msg.sender].xTotalDeposit, "can not withdraw more than you deposited");
+uint deposit0 = (user[msg.sender].xDeposit[0]).mul(x).div(z);
+require(deposit0  >= user[msg.sender].DepositLocked[0], "the first deposit can not be unlocked now");
+```
