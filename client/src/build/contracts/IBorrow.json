@@ -1,0 +1,267 @@
+{
+  "contractName": "IBorrow",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "receiverAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.6.11+commit.5ef660b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"receiverAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol\":\"IBorrow\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol\":{\"keccak256\":\"0x060ea91347f66f9ac2d975f7862ade51d678f49a0e68a47f31b7629243f55c30\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d21c2e275dd7f7f5f4f2bc117a78bee55ab91336c3850b06c51020d2cd76aa7d\",\"dweb:/ipfs/QmPnBnNAWs8jEoDRKW4W537hvmvq2UiJpKfggZbF7cDRqt\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity 0.6.11;\n\ninterface IBorrow {\n  function receiverAddress() external view returns(address);\n}\n",
+  "sourcePath": "/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol",
+  "ast": {
+    "absolutePath": "/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol",
+    "exportedSymbols": {
+      "IBorrow": [
+        1792
+      ]
+    },
+    "id": 1793,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1786,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".11"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:23:5"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 1792,
+        "linearizedBaseContracts": [
+          1792
+        ],
+        "name": "IBorrow",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "functionSelector": "16fed3e2",
+            "id": 1791,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "receiverAddress",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 1787,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "103:2:5"
+            },
+            "returnParameters": {
+              "id": 1790,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1789,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1791,
+                  "src": "128:7:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1788,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "128:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "127:9:5"
+            },
+            "scope": 1792,
+            "src": "79:58:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1793,
+        "src": "57:82:5"
+      }
+    ],
+    "src": "32:108:5"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol",
+      "exportedSymbols": {
+        "IBorrow": [
+          1792
+        ]
+      },
+      "license": "MIT"
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "0.6",
+            ".11"
+          ]
+        },
+        "id": 1786,
+        "name": "PragmaDirective",
+        "src": "32:23:5"
+      },
+      {
+        "attributes": {
+          "abstract": false,
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "interface",
+          "documentation": null,
+          "fullyImplemented": false,
+          "linearizedBaseContracts": [
+            1792
+          ],
+          "name": "IBorrow",
+          "scope": 1793
+        },
+        "children": [
+          {
+            "attributes": {
+              "body": null,
+              "documentation": null,
+              "functionSelector": "16fed3e2",
+              "implemented": false,
+              "isConstructor": false,
+              "kind": "function",
+              "modifiers": [
+                null
+              ],
+              "name": "receiverAddress",
+              "overrides": null,
+              "scope": 1792,
+              "stateMutability": "view",
+              "virtual": false,
+              "visibility": "external"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1787,
+                "name": "ParameterList",
+                "src": "103:2:5"
+              },
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "mutability": "mutable",
+                      "name": "",
+                      "overrides": null,
+                      "scope": 1791,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "address",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "stateMutability": "nonpayable",
+                          "type": "address"
+                        },
+                        "id": 1788,
+                        "name": "ElementaryTypeName",
+                        "src": "128:7:5"
+                      }
+                    ],
+                    "id": 1789,
+                    "name": "VariableDeclaration",
+                    "src": "128:7:5"
+                  }
+                ],
+                "id": 1790,
+                "name": "ParameterList",
+                "src": "127:9:5"
+              }
+            ],
+            "id": 1791,
+            "name": "FunctionDefinition",
+            "src": "79:58:5"
+          }
+        ],
+        "id": 1792,
+        "name": "ContractDefinition",
+        "src": "57:82:5"
+      }
+    ],
+    "id": 1793,
+    "name": "SourceUnit",
+    "src": "32:108:5"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.11+commit.5ef660b1.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.4",
+  "updatedAt": "2021-04-28T13:11:33.722Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

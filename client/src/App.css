@@ -1,37 +1,161 @@
-.principalGrid {
-background-color: #09bbd3;
-
+.App {
+  text-align: center;
+  align-items: flex-end;
+  /* background: linear-gradient(to top, rgb(100, 10, 0), rgba(103, 201, 6, 0.486)); */
+  background-image: linear-gradient(rgb(7, 134, 13), rgb(238, 238, 144));
 }
 
-.App {
+/* PAGE PUBLIC  */
+
+.Aider {
+  color: rgb(51, 136, 211);
+}
+
+.unicef {
+  margin-left: 35%;
+  margin-right: 35%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+  letter-spacing: 0.4ch;
+  font-family: "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  color: rgba(0, 128, 255, 0.527);
+  font-size: 150%;
+  font-variant: initial;
+  border-radius: 1%;
+  background-color: rgb(255, 255, 255);
+}
+
+.usdc {
+  margin-left: 25%;
+  margin-right: 25%;
+  border-collapse: separate;
+  background-color: #ffffff00;
+  margin-top: 2%;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.carte {
+  background: linear-gradient(
+    to top,
+    rgba(41, 26, 3, 0),
+    rgba(244, 248, 6, 0.199)
+  );
+  padding-top: 1%;
+  margin-bottom: 2%;
+  margin-left: 35%;
+  margin-right: 35%;
+  border-radius: 2%;
+  border-style: double;
+  color: rgb(255, 255, 255);
+  scroll-padding: initial;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* PAGE ADMIN */
+
+.TokenPair {
+  background-color: rgb(33, 51, 4);
+}
+
+/* page UserVoting  */
+
+.cartog {
+  /* display: flex;
+flex-direction: column;
+align-items: center; */
+  /* direction: row;
+justify:space-evenly;
+align-items: flex-start; */
+
+  margin-top: 0%;
+  padding-top: 1%;
+  padding-bottom: 4%;
+}
+/* page adlminVoting */
+
+.image {
+  display: flex;
+}
+
+.imagesolipay {
+  height: 150px;
+  width: 200px;
+  align-items: center;
+}
+
+.votingtexte {
+  font-family: Arial, Helvetica, sans-serif;
+  color: rgba(245, 245, 245, 0.986);
+}
+
+.imagevote {
+  height: 150px;
+  width: 200px;
+  align-items: center;
+}
+/* align-items: flex-start; */
+.adminvoti {
+  max-width: 100px;
+  max-height: 100px;
+}
+
+/* page amin voting */
+.imagesolipayadminvoting {
+  display: grid;
+
+  align-items: center;
+  height: 150px;
+  width: 200px;
+  align-items: center;
+
+  margin-left: auto;
+  margin-right: auto;
+}
+.voteadmintext {
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-style: oblique;
+  color: rgba(250, 250, 250, 0.37);
+}
+
+.totalgrid {
+  align-items: center;
+  background-color: rgb(0, 0, 0);
+  max-width: max;
+  max-height: max;
+  widows: initial;
+}
+.interieur {
+  text-align: center;
+  align-content: center;
+  color: aliceblue;
+  background-color: rgb(10, 112, 7);
+  max-width: 100%;
+  max-height: 100%;
+}
+.boutonadmin {
+  text-align: center;
+  background-color: linear-gradient(
+    to top,
+    rgb(105, 180, 6),
+    rgba(0, 165, 187, 0.034)
+  );
+  font-family: "Times New Roman", Times, serif;
+}
+.boutonvote {
+  text-align: center;
+}
+.startnewvote {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
+.partibass {
+  margin: 5%;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: rgb(175, 172, 172);
-}
-
-
-
-.App-link {
-  color: #09d3ac;
-}
-.carte {
-
-font-size: 35px;
-padding-right: center;
-font-style:initial;
-color: aliceblue;
-  background-color: #7e8606c5;
+.photodugagnant {
+  align-content: center;
+  margin-top: 2%;
+  padding: 10%;
 }
