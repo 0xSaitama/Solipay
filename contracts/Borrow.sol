@@ -7,7 +7,7 @@ import "./interfaces/IProxy.sol";
 
 /// @title A contract for the management of votes
 /// @dev The contract can still be improved
-contract Loan is Ownable{
+contract Borrow is Ownable{
     using SafeMath for uint;
 
 
@@ -39,8 +39,7 @@ contract Loan is Ownable{
     }
 
 //Variable
-    /* uint numberOfLoanRequest;
-    uint numberOfEntity; */
+
 //    bool borrowOpen;
     WorkflowStatus public status;
     IProxy proxy;
@@ -56,19 +55,19 @@ contract Loan is Ownable{
     mapping(uint => address) public borrowers; // LoanRequest est un struct */
 
 //Tableau
-    Voter[] public votes;
     LoanRequest[] public loans;
 
 //Event
-    event EntityRegistered(address entitiesAddress);
-    event LoanRequestRegistrationStarted();
-    event LoanRequestRegistrationEnded();
-    event LoanRequestRegistered(uint loanRequestId);
+    event EntityRegistered(address[] soliAddress);
+    event ProposalsRegistrationStarted();
+    event ProposalsRegistrationEnded();
+    event ProposalRegistered(uint loanRequestId);
     event VotingSessionStarted();
     event VotingSessionEnded();
-    event Voted (address entity, uint loanRequestId);
+    event Voted(address entity, uint loanRequestId);
     event VotesTallied();
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
+    event receiverAddressUpdated(address receiver);
 
 
 //Constructor
@@ -79,19 +78,20 @@ contract Loan is Ownable{
     }
 
 
-//Function
+    modifier isRegistred {
+      require(voters[msg.sender].isRegistered == true, "unregistred");
+      _;
+    }
 
 
 
     /// @param _description receiver description of the project to fund and it address
     function registerLoanRequest(string memory _description, address receiver) public onlyOwner {
-
-
         require(status == WorkflowStatus.LoanRequestStarted, "Not allowed");
-        require(voters[msg.sender].isRegistered,"You are not registred");
-
         LoanRequest memory loanR = LoanRequest(_description, 0, receiver);
         loans.push(loanR);
+        uint id = loans.length.sub(1);
+        emit ProposalRegistered(id);
 
     //    uint proposalId = loans.length.sub(1);
     //    borrowers[loanRequestId] = msg.sender;
@@ -99,15 +99,14 @@ contract Loan is Ownable{
 
     /// @notice Records the addresses of participants
     /// @dev Copy the array of users to the proxy, Error with Client call in ProxySimple.sol
-    /// @param _addr proxy address
-    function setEntity(address _addr) public onlyOwner {
+    function setEntity() public onlyOwner {
       address[] memory copyTab = proxy.getAdrClients();
 
-        for(uint i; i == copyTab.length; i++) {
-           votes[i] = Voter(true,false,proxy.getUserDeposits(copyTab[i]),0);
-            address voterAddr = copyTab[i];
-
+        for(uint i; i < copyTab.length; i++) {
+          address _address = copyTab[i];
+           voters[_address] = Voter(true,false,proxy.getUserDeposits(copyTab[i]),0);
           }
+          emit EntityRegistered(copyTab);
         }
 
 
@@ -115,9 +114,8 @@ contract Loan is Ownable{
     /// @notice Function to vote, Id 0 for blank vote
     /// @dev For the moment we only vote once
     /// @param _proposalId Proxy address
-    function vote(uint _proposalId) external {
-        require(status == WorkflowStatus.VotingSessionStarted, "Not allowed");
-        require(voters[msg.sender].isRegistered,"You are not registred");
+    function addVote(uint _proposalId) external isRegistred {
+        require(status == WorkflowStatus.VotingSessionStarted,"Not allowed");
         require(!voters[msg.sender].hasVoted, "Already voted");
 
         voters[msg.sender].hasVoted = true;
@@ -153,8 +151,8 @@ contract Loan is Ownable{
         emit VotesTallied();
     } */
 
-    function getWinningProposal() private onlyOwner returns (uint _proposalId) {
-        require(status == WorkflowStatus.VotingSessionEnded);
+    function getWinningProposal() external onlyOwner returns (uint _proposalId) {
+        require(status == WorkflowStatus.VotingSessionEnded, "Not allowed");
             uint winnerVoteCount = 0;
             uint challenger = 0;
             for (uint i = 0; i < loans.length; i++) {
@@ -168,41 +166,50 @@ contract Loan is Ownable{
             winningProposalId = _proposalId;
             if(winnerVoteCount == loans[challenger].voteCount) {
                  winningProposalId = 0;
+                 receiverAddress = stacking;
             }
             emit VotesTallied();
+            receiverAddress = loans[winningProposalId].receiver;
             return winningProposalId;
           }
 
     /// @notice Change the current status
     /// @dev
 
-    function changeToNextStatus() external onlyOwner {
+    function nextStep() external onlyOwner {
         WorkflowStatus previousStatus = status;
 
         if (status == WorkflowStatus.RegisteringEntities) {
             status = WorkflowStatus.LoanRequestStarted;
             registerLoanRequest("none of following proposals",stacking);
+            emit ProposalsRegistrationStarted();
         }
         else if (status == WorkflowStatus.LoanRequestStarted) {
             status = WorkflowStatus.LoanRequestEnded;
+            emit ProposalsRegistrationEnded();
         }
         else if (status == WorkflowStatus.LoanRequestEnded) {
             status = WorkflowStatus.VotingSessionStarted;
+            emit VotingSessionStarted();
         }
         else if (status == WorkflowStatus.VotingSessionStarted) {
             status = WorkflowStatus.VotingSessionEnded;
+            emit VotingSessionEnded();
         }
         else {
             status = WorkflowStatus.VotesTallied;
+
         }
 
         emit WorkflowStatusChange(previousStatus, status);
     }
 
+    function getWinningProposalId() external view returns(uint){
+      return winningProposalId;
+    }
 
-    function setWiningAddress() external onlyOwner {
-      require(status == WorkflowStatus.VotesTallied);
-      receiverAddress = loans[winningProposalId].receiver;
+    function getReceiverAddress() external view returns(address){
+      return receiverAddress;
     }
 
 }

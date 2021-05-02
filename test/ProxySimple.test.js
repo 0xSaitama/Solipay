@@ -1,10 +1,10 @@
-const { BN, expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+const { BN, expectRevert, expectEvent, time } = require('@openzeppelin/test-helpers');
 const { web3 } = require('@openzeppelin/test-helpers/src/setup');
 const { expect } = require('chai');
 const ProxySimple = artifacts.require('ProxySimple');
 const Stacking = artifacts.require('Stacking');
 const Erc20usdc = artifacts.require('ERC20Token');
-const timeMachine = require('ganache-time-traveler');
+
 
 describe("ProxySimple contract", function() {
   let contract;
@@ -28,7 +28,7 @@ describe("ProxySimple contract", function() {
   owner = accounts[0];
   userlisted = accounts[1];
   notOwner = accounts[2];
-  notuserlisted = accounts[3];  //userunlisted
+  unlisted = accounts[3];  //userunlisted
   stackingSol = stackingcontract.address;
   proxySol = contract.address;
   erc20address = erc20.address;
@@ -38,42 +38,26 @@ describe("ProxySimple contract", function() {
   await contract.setStackingAddress(stackingSol,{from: owner});
   await contract.setTokenAd(erc20.address,{from: owner});
 
-  await erc20.approve(contract.address, 5000, {from: userlisted});
-  await erc20.approve(contract.address, 5000, {from: owner});
-  await contract.transferProxy(erc20.address, owner, userlisted, 3000, {from: owner});
-  await contract.deposit(0,{from: userlisted});
+  await erc20.approve(contract.address, 500000000, {from: userlisted});
+  await erc20.approve(contract.address, 500000000, {from: owner});
+  await erc20.approve(contract.address, 500000000, {from: unlisted});
+
+  await contract.transferProxy(erc20.address, owner, userlisted, 300000000, {from: owner});
+  await contract.transferProxy(erc20.address, owner, unlisted, 1000, {from: owner});
+  await contract.deposit(1000,{from: userlisted});
   });
 
-  beforeEach(async() => {
-    let snapshot = await timeMachine.takeSnapshot();
-    snapshotId = snapshot['result'];
-  });
-
-  afterEach(async() => {
-    await timeMachine.revertToSnapshot(snapshotId);
-  });
-
-//////
   describe('test depositLock', () => {
-
-    it('on doit avoir depositlock = 100', async () => {
-
-      await contract.deposit(100,{from: userlisted});
-      let blibli = (await contract.getUser(userlisted)).xDeposit[1];
-      console.log(blibli);
-
-    });
-/////////////////////////////////////////////////////////
 
   describe('Test de l\'ensemble du processus de dépôt- demande de retrait', () => {
 
-    describe('Un client listé dépose 0', () => {
+    describe('Un client listé dépose 1000', () => {
 
       it('on ne devrait pas avoir de nouvelle ligne dans le tableau clients', async () => {
         let adrClients = await contract.getAdrClients({from: userlisted});
         let lengthTabBefore = new BN(adrClients.length);
 
-        await contract.deposit(0,{from: userlisted});
+        await contract.deposit(2000,{from: userlisted});
 
         adrClients = await contract.getAdrClients({from: userlisted});
         let lengthTabAfter = new BN(adrClients.length);
@@ -85,7 +69,7 @@ describe("ProxySimple contract", function() {
         let adrClients = await contract.getAdrClients({from: notuserlisted});
         let lengthTabBefore = new BN(adrClients.length);
 
-        await contract.deposit(0,{from: notuserlisted});
+        await contract.deposit(1000,{from: unlisted});
 
         adrClients = await contract.getAdrClients({from: notuserlisted});
         let lengthTabAfter = new BN(adrClients.length);
@@ -98,125 +82,135 @@ describe("ProxySimple contract", function() {
 
       it('on devrait voir l\' event valideDepot(address client, uint amount)', async () => {
 
-        let valideDepotReceipt = await contract.deposit(100, {from: userlisted});
+        let valideDepotReceipt = await contract.deposit(3000, {from: userlisted});
 
-        await expectEvent(valideDepotReceipt, "valideDepot",{client: userlisted , amount: new BN(100)});
+        await expectEvent(valideDepotReceipt, "valideDepot",{client: userlisted , amount: new BN(3000)});
       });
 
-      it('on devrait voir la balance de proxySol s\'incrémenter de 100', async () => {
+      it('on devrait voir la balance du contrat stacking s\'incrémenter', async () => {
 
         let stackingSolBalanceBefore = await erc20.balanceOf(stackingSol, {from: owner});
 
-        await contract.deposit(100, {from: userlisted});
+        await contract.deposit(4000, {from: userlisted});
 
         let stackingSolBalanceAfter = await erc20.balanceOf(stackingSol, {from: owner});
 
-        expect(stackingSolBalanceAfter).to.be.bignumber.equal(stackingSolBalanceBefore.add(new BN(100)));
+        expect(stackingSolBalanceAfter).to.be.bignumber.equal(stackingSolBalanceBefore.add(new BN(4000)));
         });
 
-      it('on devrait voir xTotalDeposit du client s\'incrémenter de 100', async () => {
+      it('on devrait voir xTotalDeposit du client s\'incrémenter de xDeposit', async () => {
 
         let xTotalDepositBefore = await contract.getUserDeposits(userlisted);
-        await contract.deposit(100, {from: userlisted});
+
+        await contract.deposit(5000, {from: userlisted});
 
         let xTotalDepositAfter = await contract.getUserDeposits(userlisted);
 
-        let x = await contract.updateXprice(0);
-        x = new BN(x);
-        let xDepot = new BN(100).div(x);
+        let xDepot = (await contract.getUser(userlisted)).xDeposit[4];
 
         expect(xTotalDepositAfter).to.be.bignumber.equal(xTotalDepositBefore.add(new BN(xDepot)));
       });
 
-      it('on devrait voir totalVotingPower s\'incrémenter de 100', async () => {
+      it('on devrait voir totalVotingPower s\'incrémenter', async () => {
 
         let totalVotingPower = await contract.totalVotingPower.call();
         let totalVotingPowerBefore = new BN(totalVotingPower);
 
-        await contract.deposit(100, {from: userlisted});
+        await contract.deposit(6000, {from: userlisted});
+
+        let toAdd = (await contract.getUser(userlisted)).DepositLocked[5];
 
         totalVotingPower = await contract.totalVotingPower.call();
         let totalVotingPowerAfter= new BN(totalVotingPower);
 
-        expect(totalVotingPowerAfter).to.be.bignumber.equal(totalVotingPowerBefore.add(new BN(100)));
+        expect(totalVotingPowerAfter).to.be.bignumber.equal(totalVotingPowerBefore.add(new BN(toAdd)));
+
       });
     });
 
 
     describe('Un client aillant déposé fait un demande de retrait supérieur à son solde', () => {
       it('on devrait voir une erreur', async () => {
-        await contract.deposit(100, {from: userlisted});
-        await expectRevert(contract.withdrawPending(2000, { from: userlisted }), "can not withdraw more than you deposited");
+        await contract.deposit(7000, {from: userlisted});
+        await expectRevert(contract.wantWithdraw(20000000, { from: userlisted }), "can not withdraw more than you deposited");
       });
     });
 
     describe('Un client aillant déposé fait un demande de retrait valide', () => {
       it('on devrait voir retourné l\'event authorizedWithdrawal', async () => {
-        await contract.deposit(100, {from: userlisted});
-        await timeMachine.advanceTimeAndBlock(20000000);
-
-        let authorizedWithdrawalReceipt = (await contract.withdrawPending(100, { from: userlisted }));
-
-        (await expectEvent(authorizedWithdrawalReceipt, "authorizedWithdrawal",{client: userlisted , amount: new BN(100)}));
+        await contract.deposit(8000, {from: userlisted});
+        time.increase(time.duration.years(1));
+        let blibli = (await contract.getUser(userlisted)).xDeposit[1];
+        console.log(blibli);      // chek combien de xDeposit pour 100$
+        let blabla = await contract.getUserDeposits(userlisted);
+        console.log(blabla.toString());
+        ble = await contract.updateXprice(0,{from: owner});
+        blo = ble*blabla;
+        console.log(blo.toString());
+        let bloblo = (await contract.getUser(userlisted)).DepositLocked[2];
+        console.log(bloblo);
+        let blpblo = (await contract.getUser(userlisted)).DepositLocked.length;
+        console.log(blpblo);
+        let authorizedWithdrawalReceipt = (await contract.wantWithdraw(36000, { from: userlisted }));
+        console.log(authorizedWithdrawalReceipt);
+        blibli = (await contract.getUser(userlisted)).xDeposit[0];
+        console.log(blibli);      // chek combien de xDeposit pour 100$
+        blabla = await contract.updateXprice(0,{from: owner});
+        console.log(blabla.toString());
+         blpblo = (await contract.getUser(userlisted)).DepositLocked.length;
+        console.log(blpblo);
+        bloblo = (await contract.getUser(userlisted)).DepositLocked[0];
+        console.log(bloblo);
+        await expectEvent(authorizedWithdrawalReceipt, "authorizedWithdrawal",{client: userlisted , amount: new BN(36000)});
       });
-      });
+
     });
 
 
-    /*
+
     describe('demande de retrait avant timelock ', () => {
       it('on devrait voir retourné can not withdraw from a locked deposit', async () => {
-        await contract.deposit(100, {from: userlisted});
 
-       // let blibli = (await contract.getUser(userlisted)).xDeposit[1];
-       // console.log(blibli);
-        //await contract.withdrawPending(50, { from: userlisted });
-       // let bloblo = (await contract.getUser(userlisted)).DepositLocked[1];
-       // console.log(bloblo);
+        await contract.deposit(1000, {from: userlisted});
+        let blibli = (await contract.getUser(userlisted)).xDeposit[0];
+        console.log(blibli);      // chek combien de xDeposit pour 100$
+        let blabla = await contract.updateXprice(0,{from: owner});
+        console.log(blabla.toString());
+        let bloblo = (await contract.getUser(userlisted)).DepositLocked[0];
+        console.log(bloblo);
 
-        (await expectRevert(contract.withdrawPending(50, { from: userlisted }), "can not withdraw from a locked deposit"));
-       // await expectRevert(contract.withdrawPending(50, { from: userlisted }), "can not withdraw from a locked deposit");
-       let blabla = (await contract.getUser(userlisted)).xDeposit[1];
-       console.log(blabla);
-
+        await expectRevert(contract.wantWithdraw(1000, { from: userlisted }), "can not withdraw from a locked deposit");
       });
     });
-    */
-
-
-
   });
 
   describe('Test de Withdraw', () => {
     describe('notOwner lance les retraits', () => {
       it('on devrait voir retrouné le require "Ownable: caller is not the owner" ', async () => {
-        await expectRevert(contract.Withdraw(proxySol, { from: notOwner }), "Ownable: caller is not the owner");
+        await expectRevert(contract.withdraw(proxySol, { from: notOwner }), "Ownable: caller is not the owner");
       });
     });
 
     describe('withdraw par le owner', () => {
       it('on devrait voir le solde de userlisted augmenter', async () => {
-       // await timeMachine.advanceTimeAndBlock(2000000000);
-        await contract.deposit(200, {from: userlisted});
-        await contract.deposit(300, {from: userlisted});
-        //await contract.deposit(400, {from: userlisted});
-       // let blibli = (await contract.getUser(userlisted)).xDeposit[1];
-        //console.log(blibli);
-        await timeMachine.advanceTimeAndBlock(20000000);
-        //let bloblo = (await contract.getUser(userlisted)).DepositLocked[1];
-       // console.log(bloblo);
-       // let balance = await stackingcontract.getBalance(erc20address);
-       // console.log(balance);
-       // await timeMachine.advanceTimeAndBlock(20000000);
-        await contract.withdrawPending(100, { from: userlisted });
-        let withdrawPendingNumber = (await contract.getUser(userlisted)).withdrawPending;
+        time.increase(time.duration.years(1));
 
-        let avant = erc20.balanceOf(userlisted);
-        await contract.withdraw(erc20address, { from: owner });
-        let apres = erc20.balanceOf(userlisted);
-        expect(apres).to.be.bignumber.equal(avant.add((withdrawPendingNumber)));
+        await contract.transferProxy(erc20.address, owner, contract.address, 1000000, {from: owner});
+        await contract.wantWithdraw(500, { from: userlisted });
+        let withdrawPendingNumber = (await contract.getUser(userlisted)).withdrawPending;
+        console.log(withdrawPendingNumber);
+        let allow = await erc20.allowance(contract.address, userlisted);
+        console.log(allow.toString());
+        let total = await contract.totalWithdraw();
+        console.log(total.toString());
+
+        let balanceBefore = await erc20.balanceOf(userlisted);
+        await contract.withdraw(erc20.address, { from: owner });
+        let balanceAfter = await erc20.balanceOf(userlisted);
+        expect(balanceAfter).to.be.bignumber.equal(balanceBefore.add(new BN(withdrawPendingNumber)));
       });
     });
 
   });
+});
 });

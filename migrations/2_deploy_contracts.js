@@ -2,6 +2,8 @@
 const Stacking = artifacts.require("Stacking");
 const Oracle = artifacts.require("OracleSimplePair");
 const ProxySimple = artifacts.require("ProxySimple");
+const Borrow = artifacts.require('Borrow');
+const ERC20 = artifacts.require('ERC20Token');
 module.exports = async function(deployer, _network, accounts) {
 
   const usdtAddress = "0x07de306ff27a2b630b1141956844eb1552b956b5";//kovan
@@ -15,10 +17,13 @@ module.exports = async function(deployer, _network, accounts) {
   const uniAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";//kovan
 
 
- await deployer.deploy(Stacking, uniRouter);
- const stacking = await Stacking.deployed()
+ //await deployer.deploy(Stacking, uniRouter);
+ //const stacking = await Stacking.deployed()
  await deployer.deploy(ProxySimple);
- await deployer.deploy(Oracle, factory, daiAddress, uniAddress);
+ await deployer.deploy(ERC20, 1000);
+ const proxy = await ProxySimple.deployed()
+// await deployer.deploy(Borrow, stacking.address, proxy.address);
+ //await deployer.deploy(Oracle, factory, daiAddress, uniAddress);
  //let stacking = await Stacking.deployed()
 //const oracle = await OracleSimplePair.deployed();
  // await MyDeFi.approveStack(daiAddress,MyDeFi.address,10);
