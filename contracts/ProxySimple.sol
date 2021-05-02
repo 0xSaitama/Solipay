@@ -17,12 +17,12 @@ contract ProxySimple is Ownable{
   using SafeMath for uint;
 
 
-  // Structure Client
+  // Client Structure
 
   struct Client {
-    bool lister; //registred in adrClients
-    uint withdrawPending; //total withdraw request
-    uint xTotalDeposit; //total deposit expressed in x value
+    bool lister; // registred in adrClients
+    uint withdrawPending; // total withdraw request
+    uint xTotalDeposit; // total deposit expressed in x value
     uint[] xDeposit; // array of the differents deposits in x value
     uint[] DepositLocked; // array of the differents deposits when the deposit could be withdraw
   }
@@ -33,36 +33,43 @@ contract ProxySimple is Ownable{
 
   // Variable
 
+  // Token address accepted as
+  IERC20 tokenAd;
 
-  IERC20 tokenAd; //token address accepted as
+  // Staking contract address
+  address public stacking;
 
-  address public stacking; //Staking contract address
-
-  uint apy = 5 ; // interest
+  // Interest
+  uint apy = 5 ;
+  // Lock times
   uint secondLock = 10000000;
-  uint public xLaunch; // contract deployment date
+  // Contract deployment date
+  uint public xLaunch;
 
-  uint totalWithdrawalAmount;  // Somme Global disponible prêt à payer
+  // Global sum available ready to pay
+  uint totalWithdrawalAmount;
 
   uint public totalVotingPower;
 
   address fundingProject;
 
-  // Tableaux Client
+  // Customer Tables
 
   address[] public adrClients;
 
   // Event
 
-  event valideDepot(address client, uint amount);
+  event validDeposit(address client, uint amount);
   event authorizedWithdrawal(address client, uint amount);
   event withdrawn(uint amount);
-  // Constructeur
+
+  // Constructor
+
   constructor() public{
     xLaunch = block.timestamp;
   }
 
-  //pour test
+  // This function is just for testing
   function transferProxy(IERC20 token, address sender, address recipient, uint amount) external onlyOwner{
     IERC20(token).transferFrom(sender, recipient, amount);
   }
@@ -138,12 +145,11 @@ contract ProxySimple is Ownable{
   /// and verification when calling withdrawPending
   /// @param amount the desired amount to deposit by the user
   function deposit (uint amount) public payable  {
-    require(amount > 0, "impossible de déposer 0");
+    require(amount > 0, "impossible to deposit 0");
     uint x = updateXprice(0);
     uint z = 1000000;
     IERC20(tokenAd).transferFrom(msg.sender, stacking, amount);
-    uint depositToX = (amount.mul(z)).div(x);//
-    //uint depositToX = amount.div(x);
+    uint depositToX = (amount.mul(z)).div(x);
     user[msg.sender].xDeposit.push(depositToX);
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.add(depositToX);
     uint y = updateXprice(secondLock);
@@ -156,9 +162,9 @@ contract ProxySimple is Ownable{
       user[msg.sender].withdrawPending = 0;
     }
 
-    // Validation de l'event
-    emit valideDepot(msg.sender, amount); //MAPPING DATE D4UNLOCK ???
-    // Maj des amount de dépôt
+    // Event validation
+    emit validDeposit(msg.sender, amount);
+    // Update of the deposit amount
     totalVotingPower= totalVotingPower.add(lockedAmount);
   }
 
@@ -207,8 +213,7 @@ contract ProxySimple is Ownable{
         }
     }
 
-
-    user[msg.sender].withdrawPending += withdrawAmount; //user[msg.sender].withdrawPending.add(withdrawAmount);
+    user[msg.sender].withdrawPending = user[msg.sender].withdrawPending.add(withdrawAmount);
     address usr = msg.sender;
 
     deleteUserDeposits(usr,withdraw,length);
@@ -226,11 +231,11 @@ contract ProxySimple is Ownable{
     }
 
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.sub(xWithdraw);
-     // Maj du amount Global Payement
-    totalWithdrawalAmount += withdrawAmount;
-    IERC20(tokenAd).approve(msg.sender, withdrawAmount); // PROBLEME APPROVE
+    // Global payment update
+    totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawAmount);
+    IERC20(tokenAd).approve(msg.sender, withdrawAmount);
     totalVotingPower= totalVotingPower.sub(withdrawAmount);
-    // Validation de l'event
+    // Event validation
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
   }
 
@@ -242,17 +247,17 @@ contract ProxySimple is Ownable{
     uint toPay;
     uint length = adrClients.length;
     uint sumWithdraw;
-    // recherche de tous les clients ayant fait une demande de retrait
+    // Search for all customers who have requested a withdrawal
     for(uint i; i < length ; i++) {
       address usr =  adrClients[i];
       toPay = user[usr].withdrawPending;
-      sumWithdraw += toPay;
+      sumWithdraw = sumWithdraw.add(toPay);
       require(sumWithdraw <= totalWithdrawalAmount, "too much Withdraw");
       IERC20(_address).transfer(usr, toPay);
       user[usr].withdrawPending = 0;
     }
     emit withdrawn(totalWithdrawalAmount);
-    //Maj du totalWithdrawalAmount
+    // totalWithdrawalAmount update
     totalWithdrawalAmount = 0;
   }
 }
