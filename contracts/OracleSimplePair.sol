@@ -68,6 +68,11 @@ contract OracleSimplePair {
             amountOut = price1Average.mul(amountIn).decode144(); // convert a token1 amount in token0 amount
         }
     }
+
+    ///@notice fetch lp price expressed in one of the token pair unit
+    ///@dev the lp price is computed by using priceAverages multiplied by reserve token amountTokenA
+    ///@param lpToken, amount address of the lpToken and amount of LPs to price
+    ///@return lpPriceT0 expressed in token0 uint for a given amount in params of LPs
     function getLpPrice(IERC20 lpToken, uint amount) external view returns(uint lpPriceT0) {
       uint112 reserve0;
       uint112 reserve1;

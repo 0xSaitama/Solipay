@@ -42,7 +42,7 @@ contract ProxySimple is Ownable{
   // Interest
   uint apy = 5 ;
   // Lock times
-  uint secondLock = 10000000;
+  uint timeLock = 10000000;
   // Contract deployment date
   uint public xLaunch;
 
@@ -152,7 +152,7 @@ contract ProxySimple is Ownable{
     uint depositToX = (amount.mul(z)).div(x);
     user[msg.sender].xDeposit.push(depositToX);
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.add(depositToX);
-    uint y = updateXprice(secondLock);
+    uint y = updateXprice(timeLock);
     uint lockedAmount =(depositToX.mul(y)).div(z);
     user[msg.sender].DepositLocked.push(lockedAmount);
 
@@ -233,7 +233,9 @@ contract ProxySimple is Ownable{
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.sub(xWithdraw);
     // Global payment update
     totalWithdrawalAmount = totalWithdrawalAmount.add(withdrawAmount);
+
     IERC20(tokenAd).approve(msg.sender, withdrawAmount);
+
     totalVotingPower= totalVotingPower.sub(withdrawAmount);
     // Event validation
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
@@ -252,7 +254,9 @@ contract ProxySimple is Ownable{
       address usr =  adrClients[i];
       toPay = user[usr].withdrawPending;
       sumWithdraw = sumWithdraw.add(toPay);
+
       require(sumWithdraw <= totalWithdrawalAmount, "too much Withdraw");
+
       IERC20(_address).transfer(usr, toPay);
       user[usr].withdrawPending = 0;
     }

@@ -26,8 +26,6 @@ event LPsended(address owner, uint amount);
    uniswapRouter = IUniswapV2Router02(_uniswap); //set the UNI Router instance with a specific address
  }
 
-receive() external payable { }
-
 /// @notice Define stacking contract address
 /// @param contractAddr the contract address referring to stacking.sol
 function setStackingAddress(address contractAddr) external onlyOwner {
@@ -45,13 +43,7 @@ function setProxyAddress(address contractAddr) external onlyOwner {
 function setProjectRevenue(uint8 pourcentage) external onlyOwner {
   projectRevenue = pourcentage ;
 }
-/// @notice allow the user to send ERC20 to the stacking contract
-/// @dev use of a delegate call to pass the stacking address as argument for approve function
-/// @param amount the ERC20 token amount to approve for the stacking contract
-function approveERC20(address token, address usr, uint amount) external returns(bool){
-  (bool success, bytes memory result) = address(token).delegatecall(abi.encodeWithSignature("approve(address,uint256)",usr,amount));
-  return success;
-  }
+
 /// @notice fetch an ERC20 balance of the stacking contract
 /// @param token address
 /// @return contract's balance
@@ -92,13 +84,15 @@ function approveERC20(address token, address usr, uint amount) external returns(
  }
  /// @notice approve an ERC20 token amount to uniswap Router
  /// @dev function restricted to the owner of the contract
- /// @param token, amountIn
+ /// @param token, amountIn token address and amount to approve
  /// @return amountIn the approved amount for uniswap Router
  function approveERC20Uni(IERC20 token, uint amountIn) onlyOwner external returns(uint){
    IERC20(token).approve(address(uniswapRouter), amountIn);
    return amountIn;
  }
-
+ ///@notice send Lp to an address reponsible for placing LP in liquidity pool to gains rewards
+ ///@dev the address shoulb be trusted and defined by the contract owner
+ ///@param lpToken, owner, amount token address, the account address to receive LPs and the LPs amount
  function sendLP(address lpToken, address owner, uint amount) external onlyOwner {
    IERC20(lpToken).transfer(owner, amount);
    emit LPsended(owner, amount);

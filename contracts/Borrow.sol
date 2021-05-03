@@ -155,7 +155,7 @@ contract Borrow is Ownable{
         require(status == WorkflowStatus.VotingSessionEnded, "Not allowed");
             uint winnerVoteCount = 0;
             uint challenger = 0;
-            for (uint i = 0; i < loans.length; i++) {
+            for (uint i; i < loans.length; i++) {
                 if (loans[i].voteCount > winnerVoteCount) {
                     winnerVoteCount = loans[i].voteCount;
                     _proposalId = i;
