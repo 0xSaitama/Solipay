@@ -159,3 +159,13 @@ align-items: flex-start; */
   margin-top: 2%;
   padding: 10%;
 }
+
+
+
+
+.powervoting{
+  font-size: larger;
+  font-style: normal;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: rgb(255, 255, 255);
+}

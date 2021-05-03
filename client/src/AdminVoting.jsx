@@ -7,7 +7,7 @@ import StepLabel from "@material-ui/core/StepLabel";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import UserVoting from "./UserVoting";
-import TextareaAutosize from '@material-ui/core/TextareaAutosize';
+import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function getSteps() {
-  return ["Opening of votes", "end of votes ", "Counting the votes"];
+  return ["Opening of votes", "end of votes ", "Counting the votes", "etape n° 4", "etape 5 "];
 }
 
 function getStepContent(stepIndex) {
@@ -34,6 +34,10 @@ function getStepContent(stepIndex) {
       return "is this the end of the votes";
     case 2:
       return "here is the winning association";
+      case 3:
+      return "etape n°4";
+      case 4:
+      return "etape n°5 ";
     default:
       return "Unknown stepIndex";
   }
@@ -59,7 +63,7 @@ export default function AdminVoting() {
   return (
     <Grid>
       <Grid className="totalgrid">
-      <Grid item>
+        <Grid item>
           <a href="/uservoting">Go To Public Voting</a>
           <br></br>
           <a href="/admin">Go To AdminControle</a>
@@ -72,8 +76,12 @@ export default function AdminVoting() {
       </Grid>
 
       <div className="partibass">
-        <div className={classes.root} >
-          <Stepper activeStep={activeStep} alternativeLabel style={{backgroundColor:"   rgba(247, 254, 255, 0.034)"}}>
+        <div className={classes.root}>
+          <Stepper
+            activeStep={activeStep}
+            alternativeLabel
+            style={{ backgroundColor:"rgba(255, 255, 255, 0)" }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -102,7 +110,7 @@ export default function AdminVoting() {
                   >
                     back
                   </Button>
-                  <Button
+                  <Button 
                     variant="contained"
                     color="primary"
                     onClick={handleNext}
@@ -115,20 +123,23 @@ export default function AdminVoting() {
           </div>
         </div>
       </div>
+
+      <TextareaAutosize style={{backgroundColor:"white",borderRadius:"1%", width:"500px" ,height:"200px"}}
+    
+        rowsMax={4}
+        aria-label="maximum height"
+        placeholder="Maximum 8 rows"
+        defaultValue="enregister your proposal "
+      />
+       <br></br>
+      <span></span>
+      <br></br>
+    
+      <Button variant="contained" color="primary">
+        enregistrer la proposition{" "}
+      </Button>
+<div style={{paddingBottom:80}}></div>
      
-      <TextareaAutosize
-      rowsMax={4}
-      aria-label="maximum height"
-      placeholder="Maximum 4 rows"
-      defaultValue="enregister your proposal "
-    />
-<br></br>
-<Button variant="contained" color="primary">enregistrer la proposition </Button>
-
-
-      <div className="photodugagnant">
-        <img src="/unicef.png" />
-      </div>
     </Grid>
   );
 }
