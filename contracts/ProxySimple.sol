@@ -42,12 +42,12 @@ contract ProxySimple is Ownable{
   // Interest
   uint apy = 5 ;
   // Lock times
-  uint timeLock = 10000000;
+  uint timeLock = 10512000;
   // Contract deployment date
   uint public xLaunch;
 
   // Global sum available ready to pay
-  uint totalWithdrawalAmount;
+  uint public totalWithdrawalAmount;
 
   uint public totalVotingPower;
 
@@ -77,7 +77,7 @@ contract ProxySimple is Ownable{
   /// @notice Define IERC20 token address accepted as deposit
   /// @dev restricted to the contract's owner
   /// @param _tokenAd IERC20 the token address
-  function setTokenAd (IERC20 _tokenAd) external onlyOwner{
+  function setTokenAd(IERC20 _tokenAd) external onlyOwner{
     tokenAd=_tokenAd;
   }
 
@@ -101,6 +101,7 @@ contract ProxySimple is Ownable{
   function totalWithdraw() external view returns(uint) {
     return totalWithdrawalAmount;
   }
+
   /// @notice return the client's address aray
   /// @dev usefull as relay for sending the client addresses to a borrow.sol contract
   /// @dev could be useless if it is possible access directly to the contract variable
@@ -109,6 +110,12 @@ contract ProxySimple is Ownable{
     return adrClients;
   }
 
+  /// @notice return the total voting power
+  /// @dev it represents total summed xDeposit of every client
+  /// @return big number totalVotingPower
+  function getTotalVotingPower() external view returns(uint) {
+    return totalVotingPower;
+  }
   /// @notice return client object
   /// @dev usefull as relay for sending the client properties to a borrow.sol contract
   /// @param _user the client address
@@ -136,19 +143,24 @@ contract ProxySimple is Ownable{
   /// @dev use of a delegate call to pass the stacking address as argument for approve function
   /// @param amount the ERC20 token amount to approve for the stacking contract
   function approveStacking(uint amount) external returns(bool){
-    (bool success, bytes memory result) = address(tokenAd).delegatecall(abi.encodeWithSignature("approve(address,uint256)", stacking, amount));
+    (bool success, bytes memory result) = address(tokenAd).delegatecall(abi.encodeWithSignature("approve(address,uint256)", address(this), amount));
     return success;
     }
 
+  /* function transferToStacking(address account, uint amount) internal returns(bool) {
+    (bool success, bytes memory result) = address(tokenAd).delegatecall(abi.encodeWithSignature("transferFrom(address,address,uint256)",, stacking, amount));
+    return success;
+  } */
   /// @notice make a deposit by the user in the staking contract
   /// @dev set a deposit lock by computation of the deposit value with interests at the unlock date
   /// and verification when calling withdrawPending
   /// @param amount the desired amount to deposit by the user
   function deposit (uint amount) public payable  {
-    require(amount > 0, "impossible to deposit 0");
+    require(amount > 0, "can not deposit 0");
     uint x = updateXprice(0);
     uint z = 1000000;
-    IERC20(tokenAd).transferFrom(msg.sender, stacking, amount);
+    address account = address(msg.sender);
+    IERC20(tokenAd).transferFrom(account, stacking, amount);
     uint depositToX = (amount.mul(z)).div(x);
     user[msg.sender].xDeposit.push(depositToX);
     user[msg.sender].xTotalDeposit = user[msg.sender].xTotalDeposit.add(depositToX);
@@ -165,7 +177,7 @@ contract ProxySimple is Ownable{
     // Event validation
     emit validDeposit(msg.sender, amount);
     // Update of the deposit amount
-    totalVotingPower= totalVotingPower.add(lockedAmount);
+    totalVotingPower= totalVotingPower.add(depositToX);
   }
 
 
@@ -236,7 +248,7 @@ contract ProxySimple is Ownable{
 
     IERC20(tokenAd).approve(msg.sender, withdrawAmount);
 
-    totalVotingPower= totalVotingPower.sub(withdrawAmount);
+    totalVotingPower= totalVotingPower.sub(xWithdraw);
     // Event validation
     emit authorizedWithdrawal(msg.sender, withdrawAmount);
   }
