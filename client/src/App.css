@@ -15,7 +15,9 @@
   font-family: "Lucida Console", Courier, monospace;
   color: white;
 }
-
+.voteButton {
+  background-color: rgb(0, 118, 63);
+}
 .homeText {
   font-size: 20px;
   color: white;
@@ -35,7 +37,8 @@
 }
 .center {
   align-items: center;
-  width: 100%
+  width: 100%;
+  margin-left: 25%
 }
 
 .cardContentHome {

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import React, { useState, useEffect } from "react";
+import { makeStyles, useTheme, ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardActions from "@material-ui/core/CardActions";
@@ -8,178 +8,282 @@ import CardMedia from "@material-ui/core/CardMedia";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-
 import AdminVoting from "./UserVoting";
 import { TextareaAutosize } from "@material-ui/core";
+import PropTypes from 'prop-types';
+import SwipeableViews from 'react-swipeable-views';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Box from '@material-ui/core/Box';
+import Stepper from "@material-ui/core/Stepper";
+import Step from "@material-ui/core/Step";
+import StepLabel from "@material-ui/core/StepLabel";
+import Borrow from "./build/contracts/Borrow.json";
+import getWeb3 from "./getWeb3";
+import { green, amber } from '@material-ui/core/colors';
 
-// Card
-const useStyles = makeStyles({
-  root: {
-    maxWidth: 545,
-  },
-  media: {
-    height: 380,
+const getContract = async (contract) => {
+  const web3 = await getWeb3();
+
+  // Get the contract instance.
+  const networkId = await web3.eth.net.getId();
+  const deployedNetwork = contract.networks[networkId];
+  const instance = new web3.eth.Contract(
+    contract.abi,
+    deployedNetwork && deployedNetwork.address
+  );
+
+  return instance;
+};
+
+
+  function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`full-width-tabpanel-${index}`}
+        aria-labelledby={`full-width-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <Box p={3}>
+            <Typography>{children}</Typography>
+          </Box>
+        )}
+      </div>
+    );
+  }
+
+  TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.any.isRequired,
+    value: PropTypes.any.isRequired,
+  };
+
+  function a11yProps(index) {
+    return {
+      id: `full-width-tab-${index}`,
+      'aria-controls': `full-width-tabpanel-${index}`,
+    };
+  }
+
+  const theme = createMuiTheme({
+  palette: {
+    primary: green,
+    secondary: amber,
   },
 });
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    backgroundColor: theme.palette.background.paper,
+    maxWidth: 600,
+    maxheight: 500,
+  },
+  media: {
+    height: 200,
+  },
+}));
+
 const UserVoting = () => {
   const classes = useStyles();
+  const steps = [
+  "Enregistrement des votants",
+  "Début d'enregistrement des propositions",
+  "Fin d'enregistrement des propositions",
+  "Début du vote",
+  "Fin du vote",
+  "Votes comptés"
+];
+  const [activeStep, setActiveStep] = useState(0);
   const [picture, setPicture] = useState(null);
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+  const getStep = async () => {
+    const contract = await getContract(Borrow);
+    const response = await contract.methods.status().call();
+    setActiveStep(Number(response));
+  }
+
+  getStep();
+}, []);
+
   // proposer une association
   const handlePicture = (e) => {
     setPicture(URL.createObjectURL(e.target.files[0]));
     console.log(picture);
   };
 
-  return (
-    <div className="cartog">
-      <Grid item>
-        {" "}
-        // link to other page
-        <a href="/adminvoting">Go To Admin Voting</a>
-      </Grid>
-      // image
-      <div>
-        <img className=" imagesolipay" src="solipay.png" />
-      </div>
-      <div>
-        <img className=" imagevote" src="vote.png" />
-      </div>
-      <h1 className="votingtexte">vote for the association of your choice </h1>
-      {/* // voting power of the voter depending on the funds invested */}
-      <div className="powervoting">Your voting power is 154 {}</div>
-      <br></br>
-      <div>
-        <Grid container direction="row" justify="center" alignItems="center">
-          <div className="organisationglobal">
-            <h5 style={{ color: "white", fontFamily: "arial" }}>
-              {" "}
-              Parrainage{" "}
-            </h5>
-            <Card className={classes.root}>
-              <CardActionArea>
-                <CardMedia
-                  className={classes.media}
-                  image="./giphy.gif"
-                  title="Asssociation 1"
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    FAIRE PARRAINER UN ENFANT
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    component="p"
-                  >
-                    Le conseil municipal réfléchit à la création d’un cabinet
-                    médical dans un beau bâtiment ancien de la rue du
-                    Met-Jacquet, actuellement vacant. Objectif : développer à
-                    l’horizon 2022 l’offre de soins dans la commune où se
-                    trouvent déjà une pharmacie et un cabinet d’infirmiers.
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-              <CardActions>
-                <Button size="small" color="primary">
-                  JE VOTE
-                </Button>
-              </CardActions>
-            </Card>
-            <br></br>
-            <br></br>
-            <h5 style={{ color: "white", fontFamily: "arial" }}>
-              {" "}
-              Soutenez les Syriens{" "}
-            </h5>
-            <Card className={classes.root}>
-              <CardActionArea>
-                <CardMedia
-                  className={classes.media}
-                  image="./guerresyrie.gif"
-                  title="Asssociation 1"
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    STOP A LA GUERRE
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    component="p"
-                  >
-                    L'UOSSM garantit des soins médicaux de qualité aux pays
-                    touchés par la guerre en Syrie. et dans les pays
-                    limitrophes. Découvrez notre mission et nos actions. Plus
-                    d'infos. Confiance. Transparence. Neutralité. Intégrité.
-                    Caractéristiques: Transparence, Confiance, Neutralité.
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-              <CardActions>
-                <Button size="small" color="primary">
-                  JE VOTE
-                </Button>
-              </CardActions>
-            </Card>
-            <br></br>
-            {/* // card N°3  */}
-            <h5 style={{ color: "white", fontFamily: "arial" }}>
-              {" "}
-              Les Associations de chiens Guides d’Aveugles{" "}
-            </h5>
-            <Card className={classes.root}>
-              <CardActionArea>
-                <CardMedia
-                  className={classes.media}
-                  image="./chienguide.gif"
-                  title="Asssociation 1"
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    CHIENS GUIDES PARIS
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    component="p"
-                    CHIEN
-                  >
-                    A l’occasion de la période trouble que nous vivons
-                    actuellement, nous avons encore plus besoin de vous. La
-                    solidarité doit l’emporter sur tout, aidons ensemble des
-                    personnes en situation de handicap visuel. Mobilisons-nous
-                    pour des actions concrètes sur la base du volontariat.
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-              <CardActions>
-                <Button size="small" color="primary">
-                  JE VOTE
-                </Button>
-              </CardActions>
-            </Card>
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
-            {/* // propositiond e d'association  */}
-            <h5 style={{ color: "white", fontFamily: "arial" }}>
-              {" "}
-              Proposer un projets associatif ?{" "}
-            </h5>
-            <Card className={classes.root}>
+  const handleChangeIndex = (index) => {
+    setValue(index);
+  };
+
+
+  return (
+    <Grid
+      direction="column"
+      container
+      spacing={3}
+      style={{ paddingTop: "50px"}}
+    >
+    <Grid item>
+      <Grid className="center">
+        <ThemeProvider theme={theme}>
+        <div className={classes.root}>
+          <AppBar position="static" color="default">
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              indicatorColor="primary"
+              textColor="primary"
+              variant="fullWidth"
+              aria-label="full width tabs example"
+            >
+              <Tab label="UNICEF" {...a11yProps(0)} />
+              <Tab label="AMNESTY" {...a11yProps(1)} />
+              <Tab label="GREENPEACE" {...a11yProps(2)} />
+            </Tabs>
+          </AppBar>
+          <SwipeableViews
+            axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+            index={value}
+            onChangeIndex={handleChangeIndex}
+          >
+            <TabPanel value={value} index={0} dir={theme.direction}>
+              <Card className={classes.root}>
+                <CardActionArea>
+                  <CardMedia
+                    className={classes.media}
+                    image="./cov19.jpeg"
+                    title="unicef"
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="h2">
+                      UNICEF
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      component="p"
+                    >
+                      The COVID-19 pandemic has upended the lives of children and their families across the globe.
+                      UNICEF is working with experts to promote facts over fear, bringing reliable guidance to parents,
+                      caregivers and educators, and partnering with front-line responders to ensure they have the information
+                      and resources they need to keep children healthy and learning.
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+                <CardActions>
+                  <Button size="large" color="primary">
+                    VOTE
+                  </Button>
+                  <Button size="large" color="secondary" href="https://www.msf.fr/decouvrir-msf/qui-sommes-nous">
+                    Learn More
+                  </Button>
+                </CardActions>
+              </Card>
+            </TabPanel>
+            <TabPanel value={value} index={1} dir={theme.direction}>
+              <Card className={classes.root}>
+                <CardActionArea>
+                  <CardMedia
+                    className={classes.media}
+                    image="./amnesty.png"
+                    title="amnesty"
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="h2">
+                      AMNESTY
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      component="p"
+                    >
+                      Through our detailed research and determined campaigning,
+                      we help fight abuses of human rights worldwide. We bring torturers to justice.
+                      Change oppressive laws. And free people jailed just for voicing their opinion.
+                      Our experts do accurate, cross-checked research into human rights violations by
+                      governments and others worldwide. We use our analysis to influence and press governments,
+                       companies and decision-makers to do the right thing.
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+                <CardActions>
+                  <Button size="large" color="primary">
+                    VOTE
+                  </Button>
+                  <Button size="large" color="secondary" href="https://www.amnesty.org/en/what-we-do/">
+                    Learn More
+                  </Button>
+                </CardActions>
+              </Card>
+            </TabPanel>
+            <TabPanel value={value} index={2} dir={theme.direction}>
+              <Card className={classes.root}>
+                <CardActionArea>
+                  <CardMedia
+                    className={classes.media}
+                    image="./greenPeace.jpeg"
+                    title="greenpeace"
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="h2">
+                      GREENPEACE
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      component="p"
+                      GREENPEACE
+                    >
+                    We want to live on a healthy, peaceful planet.
+                    A planet where forests flourish, oceans are full of life and where once-threatened animals safely roam.
+                    Where our quality of life is measured in relationships, not things. Where our food is delicious,
+                     nutritious, and grown with love. Where the air we breathe is fresh and clear. Where our energy is as clean as a mountain stream. Where everyone has the security, dignity and joy we all deserve.
+                     It’s all possible. We can’t make it happen alone, but have no doubt: We can do it together.
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+                <CardActions>
+                  <Button size="large" color="primary">
+                    VOTE
+                  </Button>
+                  <Button size="large" color="secondary" href="https://www.greenpeace.org/international/explore/about/about-us/">
+                    Learn More
+                  </Button>
+                </CardActions>
+              </Card>
+            </TabPanel>
+          </SwipeableViews>
+        </div>
+    </ThemeProvider>
+    </Grid>
+    </Grid>
+    <Grid item>
+      <Grid className="center">
+          <Card className={classes.root}>
               <CardActionArea>
                 <CardMedia
                   className={classes.media}
                   image={picture}
                   title="Asssociation 1"
                 >
-                  <div>
+                </CardMedia>
                     <input
                       type="file"
                       name="file"
                       onChange={(e) => handlePicture(e)}
                     />
-                  </div>
-                </CardMedia>
 
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="h2">
@@ -192,7 +296,7 @@ const UserVoting = () => {
                     CHIEN
                   >
                     <TextareaAutosize
-                      style={{ width: "300px", height: "500px" }}
+                      style={{ width: "300px", height: "300px" }}
                       placeholder="Detailler l'association que vous voudriez promouvoir  "
                     ></TextareaAutosize>
                   </Typography>
@@ -204,12 +308,13 @@ const UserVoting = () => {
                 </Button>
               </CardActions>
             </Card>
-          </div>
+          </Grid>
         </Grid>
 
-        <br></br>
-      </div>
-    </div>
+  </Grid>
+
+
+
   );
 };
 

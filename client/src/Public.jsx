@@ -16,6 +16,9 @@ import "./App.css";
 import ProxySimple from "./build/contracts/ProxySimple.json";
 import Stacking from "./build/contracts/Stacking.json";
 import { GridList } from "@material-ui/core";
+import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import { green, amber } from '@material-ui/core/colors';
+
 
 const getContract = async (contract) => {
   const web3 = await getWeb3();
@@ -31,6 +34,13 @@ const getContract = async (contract) => {
   return instance;
 };
 
+const theme = createMuiTheme({
+palette: {
+  primary: green,
+  secondary: amber,
+},
+});
+
 function Public({ account, setMsg }) {
   // Function deposite => params : Nbjour & montant
   const [montant, setMontant] = useState(0);
@@ -43,7 +53,9 @@ function Public({ account, setMsg }) {
   const [clients, setClients] = useState([]);
 
   const [record, setRecord] = useState([]);
+
   const [share, setShare] = useState(0);
+
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
@@ -155,7 +167,7 @@ function Public({ account, setMsg }) {
   const Withdraw = async () => {
     const contract = await getContract(ProxySimple);
     const web3 = await getWeb3();
-    const amount = web3.utils.toWei(montantRetirer, 'ether');
+    const amount = web3.utils.toWei(montant, 'ether');
     const retirer = await contract.methods
       .withdrawPending(amount)
       .send({ from: account })
@@ -175,7 +187,6 @@ function Public({ account, setMsg }) {
       container
       spacing={1}
       style={{ paddingTop: "50px"}}
-
     >
     <Grid item>
       <Grid className="cardContentHome">
@@ -216,6 +227,7 @@ function Public({ account, setMsg }) {
           />
           <br></br>
           <br></br>
+          <ThemeProvider theme={theme}>
           <Button
             variant="contained"
             color="primary"
@@ -230,6 +242,7 @@ function Public({ account, setMsg }) {
           >
             Withdraw
           </Button>
+        </ThemeProvider>
           <br></br>
           <br></br>
           <br></br>
@@ -241,7 +254,7 @@ function Public({ account, setMsg }) {
           Your Deposit History
           <ul>
             {record.map(record =>
-            <li key="{record}"> Deposited {record.deposit} DAI the {record.timestamp} transaction hash : {record.hash}</li>
+            <li key="{record}"> Deposited {record.deposit} DAI the {record.timestamp} <br></br>transaction hash : {record.hash}</li>
             )}
           </ul>
         </Grid>
@@ -268,9 +281,6 @@ function Public({ account, setMsg }) {
       </CardContent>
     </CardActionArea>
     <CardActions>
-      <Button size="small" color="primary" href="https://www.msf.fr/decouvrir-msf/qui-sommes-nous">
-        Learn More
-      </Button>
     </CardActions>
   </Card>
     </Grid>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import OracleSimplePair from "./build/contracts/OracleSimplePair.json";
 import Stacking from "./build/contracts/Stacking.json";
+import ProxySimple from "./build/contracts/ProxySimple.json";
 import getWeb3 from "./getWeb3";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
@@ -40,10 +41,10 @@ function Admin({ account, setMsg }) {
     "0xFA73472326E0e0128E2CA6CeB1964fd77F4AE78d"
   );
   const [addressContract, setAddressContract] = useState(
-    "0x61dcb07cf4fe59907b37455b978c277687385a8e"
+    "0x3F1017D25c64f5B6b6A8F30b7a08B97f0344cAf2"
   );
   const [proxyaddr, setProxyAddress] = useState(
-    "0x21a0BF5f05b5AAab451e0B8c6D57145cc3240942"
+    "0x11F9732Ee797A581A5b4DAfdF0AC25619AFF3022"
   );
   const [amount, setAmount] = useState(0);
   const [amount2, setAmount2] = useState(0);
@@ -102,11 +103,18 @@ function Admin({ account, setMsg }) {
   };
 
   const setContractAddress = async () => {
-    const contract = await getContract(Stacking);
+    let contract = await getContract(Stacking);
     const web3 = await getWeb3();
-    const addr = await contract.address;
-    await contract.methods.setStackingAddress(addr).send({ from: account });
+    //const addr = await contract.address;
+    await contract.methods.setStackingAddress(addressContract).send({ from: account });
+    contract = await getContract(ProxySimple);
+    await contract.methods.setStackingAddress(addressContract).send({ from: account });
   };
+
+  const TokenAd = async () => {
+    const contract = await getContract(ProxySimple);
+    await contract.methods.setTokenAd(addr1).send({from: account});
+  }
 
   const setProxySimpleAddress = async () => {
     const contract = await getContract(Stacking);
@@ -114,6 +122,7 @@ function Admin({ account, setMsg }) {
     const addr = proxyaddr;
     await contract.methods.setProxyAddress(addr).send({ from: account });
   };
+
   const approveUni = async (address) => {
     const contract = await getContract(Stacking);
     const web3 = await getWeb3();
@@ -273,7 +282,7 @@ function Admin({ account, setMsg }) {
 
   return (
 
- // VIEW   
+ // VIEW
     <Grid ClassName="admine">
       <div>
         <Grid item>
@@ -282,14 +291,14 @@ function Admin({ account, setMsg }) {
         <Grid item>
           <a href="/adminvoting">Go To Admin Voting</a>
         </Grid>
-        
+
         <h2>Control Office </h2>
         <form noValidate autoComplete="off">
           <div ClassName="TokenPair">
             <Typography color="secondary" gutterBottom>
               <h3>TOKEN PAIR</h3>
             </Typography>
-        
+
             <Typography>
               <br></br>
 
@@ -465,7 +474,7 @@ function Admin({ account, setMsg }) {
 
 
           <div ClassName="SETTING">
-      
+
                 <Typography color="secondary" gutterBottom>
                   <h3>SETTINGS</h3>
                 </Typography>
@@ -507,6 +516,16 @@ function Admin({ account, setMsg }) {
                     onClick={() => lpPricing()}
                   >
                     Refresh LP Price
+                  </Button>
+                </Typography>
+                <br></br>
+                <Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => TokenAd()}
+                  >
+                    Token Accepted
                   </Button>
                 </Typography>
                 <br></br>

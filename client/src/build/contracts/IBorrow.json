@@ -15,34 +15,34 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.6.11+commit.5ef660b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"receiverAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol\":\"IBorrow\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol\":{\"keccak256\":\"0x060ea91347f66f9ac2d975f7862ade51d678f49a0e68a47f31b7629243f55c30\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d21c2e275dd7f7f5f4f2bc117a78bee55ab91336c3850b06c51020d2cd76aa7d\",\"dweb:/ipfs/QmPnBnNAWs8jEoDRKW4W537hvmvq2UiJpKfggZbF7cDRqt\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.6.11+commit.5ef660b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"receiverAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/arnauddauber/Desktop/DEXsoFi/solipay/Solipay/contracts/interfaces/IBorrow.sol\":\"IBorrow\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/arnauddauber/Desktop/DEXsoFi/solipay/Solipay/contracts/interfaces/IBorrow.sol\":{\"keccak256\":\"0x060ea91347f66f9ac2d975f7862ade51d678f49a0e68a47f31b7629243f55c30\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d21c2e275dd7f7f5f4f2bc117a78bee55ab91336c3850b06c51020d2cd76aa7d\",\"dweb:/ipfs/QmPnBnNAWs8jEoDRKW4W537hvmvq2UiJpKfggZbF7cDRqt\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity 0.6.11;\n\ninterface IBorrow {\n  function receiverAddress() external view returns(address);\n}\n",
-  "sourcePath": "/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol",
+  "sourcePath": "/Users/arnauddauber/Desktop/DEXsoFi/solipay/Solipay/contracts/interfaces/IBorrow.sol",
   "ast": {
-    "absolutePath": "/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol",
+    "absolutePath": "/Users/arnauddauber/Desktop/DEXsoFi/solipay/Solipay/contracts/interfaces/IBorrow.sol",
     "exportedSymbols": {
       "IBorrow": [
-        1792
+        2766
       ]
     },
-    "id": 1793,
+    "id": 2767,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1786,
+        "id": 2760,
         "literals": [
           "solidity",
           "0.6",
           ".11"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:23:5"
+        "src": "32:23:7"
       },
       {
         "abstract": false,
@@ -51,9 +51,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 1792,
+        "id": 2766,
         "linearizedBaseContracts": [
-          1792
+          2766
         ],
         "name": "IBorrow",
         "nodeType": "ContractDefinition",
@@ -62,7 +62,7 @@
             "body": null,
             "documentation": null,
             "functionSelector": "16fed3e2",
-            "id": 1791,
+            "id": 2765,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -70,24 +70,24 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 1787,
+              "id": 2761,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "103:2:5"
+              "src": "103:2:7"
             },
             "returnParameters": {
-              "id": 1790,
+              "id": 2764,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1789,
+                  "id": 2763,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 1791,
-                  "src": "128:7:5",
+                  "scope": 2765,
+                  "src": "128:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -95,10 +95,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1788,
+                    "id": 2762,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "128:7:5",
+                    "src": "128:7:7",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -109,27 +109,27 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "127:9:5"
+              "src": "127:9:7"
             },
-            "scope": 1792,
-            "src": "79:58:5",
+            "scope": 2766,
+            "src": "79:58:7",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1793,
-        "src": "57:82:5"
+        "scope": 2767,
+        "src": "57:82:7"
       }
     ],
-    "src": "32:108:5"
+    "src": "32:108:7"
   },
   "legacyAST": {
     "attributes": {
-      "absolutePath": "/Users/hamzamessaoudi/Desktop/Solipay-master/contracts/interfaces/IBorrow.sol",
+      "absolutePath": "/Users/arnauddauber/Desktop/DEXsoFi/solipay/Solipay/contracts/interfaces/IBorrow.sol",
       "exportedSymbols": {
         "IBorrow": [
-          1792
+          2766
         ]
       },
       "license": "MIT"
@@ -143,9 +143,9 @@
             ".11"
           ]
         },
-        "id": 1786,
+        "id": 2760,
         "name": "PragmaDirective",
-        "src": "32:23:5"
+        "src": "32:23:7"
       },
       {
         "attributes": {
@@ -160,10 +160,10 @@
           "documentation": null,
           "fullyImplemented": false,
           "linearizedBaseContracts": [
-            1792
+            2766
           ],
           "name": "IBorrow",
-          "scope": 1793
+          "scope": 2767
         },
         "children": [
           {
@@ -179,7 +179,7 @@
               ],
               "name": "receiverAddress",
               "overrides": null,
-              "scope": 1792,
+              "scope": 2766,
               "stateMutability": "view",
               "virtual": false,
               "visibility": "external"
@@ -192,9 +192,9 @@
                   ]
                 },
                 "children": [],
-                "id": 1787,
+                "id": 2761,
                 "name": "ParameterList",
-                "src": "103:2:5"
+                "src": "103:2:7"
               },
               {
                 "children": [
@@ -204,7 +204,7 @@
                       "mutability": "mutable",
                       "name": "",
                       "overrides": null,
-                      "scope": 1791,
+                      "scope": 2765,
                       "stateVariable": false,
                       "storageLocation": "default",
                       "type": "address",
@@ -218,34 +218,34 @@
                           "stateMutability": "nonpayable",
                           "type": "address"
                         },
-                        "id": 1788,
+                        "id": 2762,
                         "name": "ElementaryTypeName",
-                        "src": "128:7:5"
+                        "src": "128:7:7"
                       }
                     ],
-                    "id": 1789,
+                    "id": 2763,
                     "name": "VariableDeclaration",
-                    "src": "128:7:5"
+                    "src": "128:7:7"
                   }
                 ],
-                "id": 1790,
+                "id": 2764,
                 "name": "ParameterList",
-                "src": "127:9:5"
+                "src": "127:9:7"
               }
             ],
-            "id": 1791,
+            "id": 2765,
             "name": "FunctionDefinition",
-            "src": "79:58:5"
+            "src": "79:58:7"
           }
         ],
-        "id": 1792,
+        "id": 2766,
         "name": "ContractDefinition",
-        "src": "57:82:5"
+        "src": "57:82:7"
       }
     ],
-    "id": 1793,
+    "id": 2767,
     "name": "SourceUnit",
-    "src": "32:108:5"
+    "src": "32:108:7"
   },
   "compiler": {
     "name": "solc",
@@ -253,7 +253,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-28T13:11:33.722Z",
+  "updatedAt": "2021-05-05T22:14:58.895Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
