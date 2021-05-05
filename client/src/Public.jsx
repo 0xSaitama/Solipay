@@ -16,6 +16,7 @@ import "./App.css";
 import ProxySimple from "./build/contracts/ProxySimple.json";
 import Stacking from "./build/contracts/Stacking.json";
 import { GridList } from "@material-ui/core";
+import Borrow from "./build/contracts/Borrow.json";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import { green, amber } from '@material-ui/core/colors';
 
@@ -58,6 +59,8 @@ function Public({ account, setMsg }) {
 
   const [total, setTotal] = useState(0);
 
+  const [activeStep, setActiveStep] = useState(0);
+
   useEffect(() => {
 
     balanceView();
@@ -65,6 +68,16 @@ function Public({ account, setMsg }) {
     getVotingPower();
     getPoolShare();
   }, []);
+
+  useEffect(() => {
+  const getStep = async () => {
+    const contract = await getContract(Borrow);
+    const response = await contract.methods.status().call();
+    setActiveStep(Number(response));
+  }
+
+  getStep();
+}, []);
 
   const balanceView = async () => {
     let contract = await getContract(ProxySimple);
@@ -259,7 +272,14 @@ function Public({ account, setMsg }) {
           </ul>
         </Grid>
     </Grid>
-    <Grid className="homeText"><b>Actual Project Funding</b></Grid>
+    <Grid className="homeText"><b>Actual Project Funding</b>
+      <h5 style={{ color: "red" }}>
+    {activeStep === 3
+      ? "A Voting Session to choose the new Project to fund is live Now !"
+      : ""
+    }
+  </h5>
+    </Grid>
       <Card className="fundation">
         <CardActionArea>
           <CardMedia

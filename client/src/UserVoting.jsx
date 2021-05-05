@@ -92,12 +92,12 @@ const useStyles = makeStyles((theme) => ({
 const UserVoting = () => {
   const classes = useStyles();
   const steps = [
-  "Enregistrement des votants",
-  "Début d'enregistrement des propositions",
-  "Fin d'enregistrement des propositions",
-  "Début du vote",
-  "Fin du vote",
-  "Votes comptés"
+  "Registering Voters",
+  "Registration proposal's Started",
+  "Registration proposal's Ended",
+  "Voting session started",
+  "Voting session Ended",
+  "Votes Tailed"
 ];
   const [activeStep, setActiveStep] = useState(0);
   const [picture, setPicture] = useState(null);
@@ -129,12 +129,26 @@ const UserVoting = () => {
 
 
   return (
-    <Grid
-      direction="column"
-      container
-      spacing={3}
-      style={{ paddingTop: "50px"}}
-    >
+          <Grid
+            direction="column"
+            container
+            spacing={3}
+            style={{ paddingTop: "50px"}}
+          >
+          <ThemeProvider theme={theme}>
+          <Grid item>
+        <h4 className="homeText">Voting Steps</h4>
+      </Grid>
+      <Grid item>
+        <Stepper activeStep={activeStep} alternativeLabel >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Grid>
+      </ThemeProvider>
     <Grid item>
       <Grid className="center">
         <ThemeProvider theme={theme}>
@@ -183,7 +197,7 @@ const UserVoting = () => {
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
-                  <Button size="large" color="primary">
+                  <Button size="large" color="primary" disabled={activeStep !== 3}>
                     VOTE
                   </Button>
                   <Button size="large" color="secondary" href="https://www.msf.fr/decouvrir-msf/qui-sommes-nous">
@@ -219,7 +233,7 @@ const UserVoting = () => {
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
-                  <Button size="large" color="primary">
+                  <Button size="large" color="primary" disabled={activeStep !== 3}>
                     VOTE
                   </Button>
                   <Button size="large" color="secondary" href="https://www.amnesty.org/en/what-we-do/">
@@ -255,7 +269,7 @@ const UserVoting = () => {
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
-                  <Button size="large" color="primary">
+                  <Button size="large" color="primary" disabled={activeStep !== 3}>
                     VOTE
                   </Button>
                   <Button size="large" color="secondary" href="https://www.greenpeace.org/international/explore/about/about-us/">
