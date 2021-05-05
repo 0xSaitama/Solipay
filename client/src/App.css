@@ -12,14 +12,14 @@
   text-align: end;
   align-items: right;
   background-color: rgb(0, 118, 63);
-  font-family: "courrier new", Calibri, "Trebuchet MS", sans-serif;
+  font-family: "Lucida Console", Courier, monospace;
   color: white;
 }
 
 .homeText {
   font-size: 20px;
   color: white;
-  font-family: "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-family: "Lucida Console", Courier, monospace;
 }
 .fundation {
   margin-top: 5%;
@@ -51,7 +51,7 @@
   margin-right: 10%;
   border-style: solid;
   color: rgb(255, 255, 255);
-  font-family: "Courrier New", sans-serif;
+  font-family: "Lucida Console", Courier, monospace;
   max-width: 80%;
 }
 .cardContentCentered {
@@ -67,22 +67,22 @@
   margin-right: 10%;
   border-style: solid;
   color: rgb(255, 255, 255);
-  font-family: "Courrier New", sans-serif;
+  font-family: "Lucida Console", Courier, monospace;
   max-width: 80%;
 }
 .cardContentRight {
   background-color: rgba(117, 190, 218, 0.0); /* 0.0 - transparent */
   text-align: center;
   padding-top: 4%;
-  padding-bottom: 6%;
-  padding-left: 17%;
-  padding-right: 17%;
+  padding-bottom: 8%;
+  padding-left: 6%;
+  padding-right: 6%;
   margin-bottom: 2%;
-  margin-left: 174%;
+  margin-left: 160%;
   margin-right: 10%;
   border-style: solid;
   color: rgb(255, 255, 255);
-  font-family: "Courrier New", sans-serif;
+  font-family: "Lucida Console", Courier, monospace;
   width: 150%;
 }
 .cardContentLeft {
@@ -91,13 +91,13 @@
   padding-top: 4%;
   padding-bottom: 3%;
   padding-left: 10%;
-  padding-right: 40%;
+  padding-right: 20%;
   margin-bottom: 2%;
-  margin-left: 37%;
+  margin-left: 30%;
   margin-right: 0%;
   border-style: solid;
   color: rgb(255, 255, 255);
-  font-family: "Courrier New", sans-serif;
+  font-family: "Lucida Console", Courier, monospace;
   width: 120%;
 
 }
@@ -118,7 +118,7 @@
   padding-top: 2%;
   padding-bottom: 2%;
   letter-spacing: 0.4ch;
-  font-family: "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-family: "Lucida Console", Courier, monospace;
   color: rgba(0, 128, 255, 0.527);
   font-size: 150%;
   font-variant: initial;
