@@ -152,10 +152,11 @@ function Public({ account, setMsg }) {
   const pastDeposits = async () => {
     const contract = await getContract(ProxySimple);
     const web3 = await getWeb3();
+    const accounts = await web3.eth.getAccounts();
     const depositsRecorded = await contract
     .getPastEvents
     ("validDeposit",
-    {filter: {client: account},
+    {filter: {client: accounts[0]},
     fromBlock: '24637147',
     toBlock: 'latest'});
     let depositRecord = []
@@ -209,10 +210,10 @@ function Public({ account, setMsg }) {
     <Grid
       direction="row"
       container
-      spacing={3}
+      spacing={7}
       style={{ paddingTop: "40px" }}
     >
-    <Grid item>
+    <Grid item xs>
         <Grid className="cardContentLeft">
               <img className="listStyle" src="money-bag.png" /> Deposited Amount : {deposit} DAI
               <br></br>
@@ -226,7 +227,7 @@ function Public({ account, setMsg }) {
               <img className="listStyle" src="timer.png" /> Time Lock : 4 months
       </Grid>
     </Grid>
-    <Grid item>
+    <Grid item xs>
         <Grid className="cardContentRight">
           <img className="listStyle" src="gone$.png" /> Amount
             <br></br>
@@ -256,7 +257,6 @@ function Public({ account, setMsg }) {
             Withdraw
           </Button>
         </ThemeProvider>
-          <br></br>
           <br></br>
           <br></br>
       </Grid>

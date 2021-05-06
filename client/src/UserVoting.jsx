@@ -140,7 +140,7 @@ const UserVoting = () => {
         <h4 className="homeText">Voting Steps</h4>
       </Grid>
       <Grid item>
-        <Stepper activeStep={activeStep} alternativeLabel >
+        <Stepper activeStep={activeStep} alternativeLabel  style={{ backgroundColor:"rgba(255, 255, 255, 0)" }}>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>

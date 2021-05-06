@@ -77,31 +77,33 @@
   background-color: rgba(117, 190, 218, 0.0); /* 0.0 - transparent */
   text-align: center;
   padding-top: 4%;
-  padding-bottom: 8%;
-  padding-left: 6%;
-  padding-right: 6%;
+  padding-bottom: 6%;
+  padding-left: 4%;
+  padding-right: 4%;
+  margin-top: 2%;
   margin-bottom: 2%;
-  margin-left: 160%;
+  margin-left: 20%;
   margin-right: 10%;
   border-style: solid;
   color: rgb(255, 255, 255);
   font-family: "Lucida Console", Courier, monospace;
-  width: 150%;
+  width: 50%;
 }
 .cardContentLeft {
   background-color: rgba(117, 190, 218, 0.0); /* 0.0 - transparent */
   text-align: left;
   padding-top: 4%;
   padding-bottom: 3%;
-  padding-left: 10%;
-  padding-right: 20%;
+  padding-left: 1%;
+  padding-right: 2%;
+  margin-top: 2%;
   margin-bottom: 2%;
-  margin-left: 30%;
+  margin-left: 21%;
   margin-right: 0%;
   border-style: solid;
   color: rgb(255, 255, 255);
   font-family: "Lucida Console", Courier, monospace;
-  width: 120%;
+  width: 100%;
 
 }
 
