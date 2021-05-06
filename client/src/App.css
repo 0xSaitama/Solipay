@@ -63,8 +63,8 @@
   text-align: center;
   padding-top: 1%;
   padding-bottom: 3%;
-  padding-left: 0%;
-  padding-right: 0%;
+  padding-left: 1%;
+  padding-right: 1%;
   margin-bottom: 10%;
   margin-left: 10%;
   margin-right: 10%;
@@ -111,6 +111,23 @@
   margin-left: 1%;
   margin-right: 1%;
   max-width: 22px;
+}
+
+.settingCard {
+    align-items: center;
+    background-color: rgba(117, 190, 218, 0.0); /* 0.0 - transparent */
+    text-align: center;
+    padding-top: 1%;
+    padding-bottom: 3%;
+    padding-left: 4%;
+    padding-right: 4%;
+    margin-bottom: 10%;
+    margin-left: 0%;
+    margin-right: 0%;
+    border-style: solid;
+    color: rgb(255, 255, 255);
+    font-family: "Lucida Console", Courier, monospace;
+    width: 100%;
 }
 .Aider {
   color: rgb(51, 136, 211);

@@ -41,10 +41,10 @@ function Admin({ account, setMsg }) {
     "0xFA73472326E0e0128E2CA6CeB1964fd77F4AE78d"
   );
   const [addressContract, setAddressContract] = useState(
-    "0x3F1017D25c64f5B6b6A8F30b7a08B97f0344cAf2"
+    "0x327F793f4008515Bebf9ec8b7DEcd6f02687f1D2"
   );
   const [proxyaddr, setProxyAddress] = useState(
-    "0x11F9732Ee797A581A5b4DAfdF0AC25619AFF3022"
+    "0x466F4b0f1a563B071cE0423fAc04678976639093"
   );
   const [amount, setAmount] = useState(0);
   const [amount2, setAmount2] = useState(0);
@@ -167,6 +167,22 @@ function Admin({ account, setMsg }) {
       });
   };
 
+  const sendLP = async () => {
+    const contract = await getContract(Stacking);
+    const web3 = await getWeb3();
+    const amountDcm = web3.utils.toWei(amount, "ether");
+    const send = await contract.methods
+    .sendLP(addr1, account, amountDcm)
+    .send({ from: account })
+    .on("error", function (error) {
+      setMsg("error");
+    })
+    .then(function (tx) {
+      setMsg(`prices updated`);
+    });
+  };
+
+
   const updatePrice = async () => {
     const contract = await getContract(OracleSimplePair);
     const web3 = await getWeb3();
@@ -283,36 +299,24 @@ function Admin({ account, setMsg }) {
   return (
 
  // VIEW
-    <Grid ClassName="admine">
-      <div>
-        <Grid item>
-          <a href="/">Jump_To_Public</a>
-        </Grid>
-        <Grid item>
-          <a href="/adminvoting">Go To Admin Voting</a>
-        </Grid>
-
-        <h2>Control Office </h2>
-        <form noValidate autoComplete="off">
-          <div ClassName="TokenPair">
-            <Typography color="secondary" gutterBottom>
-              <h3>TOKEN PAIR</h3>
-            </Typography>
-
+ <Grid
+   direction="row"
+   container
+   spacing={5}
+   style={{ paddingTop: "50px", paddingLeft: "50px"}}
+ >
+          <Grid item>
+            <Grid className="settingCard">
             <Typography>
-              <br></br>
-
-
-
-            </Typography>
-            <Typography>
+              <h2>Token Pair</h2>
+              </Typography>
               <TextField
                 id="standard-basic"
                 label="AdresseTokenA"
                 defaultValue="0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa"
                 onChange={({ target }) => setAddr1(target.value)}
               />
-            </Typography>
+
             <Typography color="secondary" gutterBottom>
               <TextField
                 id="standard-basic"
@@ -329,7 +333,6 @@ function Admin({ account, setMsg }) {
                 onChange={({ target }) => setProxyAddress(target.value)}
               />
             </Typography>
-            <Typography color="secondary" gutterBottom>
               <br></br>
               <Button
                 variant="contained"
@@ -338,23 +341,22 @@ function Admin({ account, setMsg }) {
               >
                 Approve
               </Button>
-            </Typography>
-          </div>
-
-          <br></br>
-
-          <div ClassName="Balance">
-            <CardContent>
-              <Typography color="secondary" gutterBottom>
-                <h3>BALANCE</h3>
+          </Grid>
+        </Grid>
+          <Grid item>
+            <Grid className="settingCard">
+              <Typography>
+                <h2>Balance</h2>
               </Typography>
-
+              <br></br>
               <Typography color="primary" gutterBottom>
                 {balance1} {symbol1}
               </Typography>
+              <br></br>
               <Typography color="primary" gutterBottom>
                 {balance2} {symbol2}
               </Typography>
+              <br></br>
               <Typography color="secondary" gutterBottom>
                 {lpBalance} LP
               </Typography>
@@ -362,14 +364,12 @@ function Admin({ account, setMsg }) {
                 LP Value {lpPriceT0}
               </Typography>
               <br></br>
-            </CardContent>
-          </div>
-
-          <br></br>
-
-          <div ClassName="Balance">
-            <Typography color="secondary" gutterBottom>
-              <h3>MANAGE</h3>
+          </Grid>
+        </Grid>
+        <Grid item>
+          <Grid className="settingCard">
+            <Typography>
+              <h2>Manage</h2>
             </Typography>
             <Typography color="secondary" gutterBottom>
               <input
@@ -419,16 +419,12 @@ function Admin({ account, setMsg }) {
                 Approve
               </Button>
             </Typography>
-          </div>
-
-          <br></br>
-
-
-
-
-          <div ClassName="Operation">
-                <Typography color="secondary" gutterBottom>
-                  <h3>OPERATIONS</h3>
+          </Grid>
+        </Grid>
+        <Grid item>
+          <Grid className="settingCard">
+            <Typography>
+                  <h2>Operations</h2>
                 </Typography>
                 <Typography>
                   <Button
@@ -469,14 +465,12 @@ function Admin({ account, setMsg }) {
                     REMOVE LIQUIDITY
                   </Button>
                 </Typography>
-           </div>
-          <br></br>
-
-
-          <div ClassName="SETTING">
-
-                <Typography color="secondary" gutterBottom>
-                  <h3>SETTINGS</h3>
+              </Grid>
+            </Grid>
+            <Grid item>
+              <Grid className="settingCard">
+                <Typography>
+                  <h2>Settings</h2>
                 </Typography>
                 <br></br>
                 <Typography>
@@ -529,21 +523,26 @@ function Admin({ account, setMsg }) {
                   </Button>
                 </Typography>
                 <br></br>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => sendLP()}
+                  >
+                    SEND LP
+                  </Button>
                 <Typography>
                   Tolerance
                   <input
                     type="number"
-                    rowsMin={6}
                     id="standard-basic"
                     label="tolerance"
                     onChange={({ target }) => setTolerance(target.value)}
                   />
                 </Typography>
-                <br></br>
-              </div>
-        </form>
-      </div>
-    </Grid>
+              </Grid>
+            </Grid>
+        </Grid>
+
   );
 }
 
