@@ -159,7 +159,7 @@ function Public({ account, setMsg }) {
     {filter: {client: accounts[0]},
     fromBlock: '24637147',
     toBlock: 'latest'});
-    let depositRecord = []
+    let depositRecord = [];
       for (let i = 0; i < depositsRecorded.length; i++) {
         let deposited = web3.utils.fromWei((depositsRecorded[i].returnValues.amount).toString(), "ether");
         let block = await web3.eth.getBlock(depositsRecorded[i].blockNumber);
@@ -275,7 +275,7 @@ function Public({ account, setMsg }) {
     <Grid className="homeText"><b>Actual Project Funding</b>
       <h5 style={{ color: "red" }}>
     {activeStep === 3
-      ? "A Voting Session to choose the new Project to fund is live Now !"
+      ? "A Voting Session to fund a new Project is live Now !"
       : ""
     }
   </h5>

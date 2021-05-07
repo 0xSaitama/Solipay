@@ -59,8 +59,8 @@ contract ProxySimple is Ownable{
 
   // Event
 
-  event validDeposit(address client, uint amount);
-  event authorizedWithdrawal(address client, uint amount);
+  event validDeposit(address indexed client, uint amount);
+  event authorizedWithdrawal(address indexed client, uint amount);
   event withdrawn(uint amount);
 
   // Constructor

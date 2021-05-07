@@ -11,7 +11,7 @@ import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
-import AdminVoting from "./AdminVoting";
+
 
 import getMessageError from "./getMessageError";
 import { rgbToHex } from "@material-ui/core";

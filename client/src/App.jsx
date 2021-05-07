@@ -89,8 +89,12 @@ function App() {
           <Route path="/admin">
             <Admin account={account} setMsg={setMsg} />
           </Route>
-          <Route exact path="/adminvoting" component = {AdminVoting}/>
-          <Route exact path="/uservoting" component = {UserVoting}/>
+          <Route exact path="/adminvoting">
+            <AdminVoting account={account} setMsg={setMsg} />
+          </Route>
+          <Route exact path="/uservoting">
+            <UserVoting account={account} setMsg={setMsg} />
+          </Route>
         </Switch>
       </Router>
       <Snackbar autoHideDuration={6000} open={!!msg} onClose={() => setMsg(null)} message={msg}/>

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, ThemeProvider, createMuiTheme, useTheme } from "@material-ui/core/styles";
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
@@ -8,6 +8,18 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import UserVoting from "./UserVoting";
 import TextareaAutosize from "@material-ui/core/TextareaAutosize";
+import Borrow from "./build/contracts/Borrow.json";
+import getWeb3 from "./getWeb3";
+import getMessageError from "./getMessageError";
+import TextField from "@material-ui/core/TextField";
+import { green, amber } from '@material-ui/core/colors';
+
+const theme = createMuiTheme({
+palette: {
+  primary: green,
+  secondary: amber,
+  },
+  });
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,61 +34,127 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const getContract = async (contract) => {
+  const web3 = await getWeb3();
+
+  // Get the contract instance.
+  const networkId = await web3.eth.net.getId();
+  const deployedNetwork = contract.networks[networkId];
+  const instance = new web3.eth.Contract(
+    contract.abi,
+    deployedNetwork && deployedNetwork.address
+  );
+
+  return instance;
+};
+
 function getSteps() {
-  return ["Opening of votes", "end of votes ", "Counting the votes", "etape n° 4", "etape 5 "];
+  return [
+    "Registering Voters",
+    "Registration proposal's Started",
+    "Registration proposal's Ended",
+    "Voting session started",
+    "Voting session Ended",
+    "Votes Tailed"
+  ];
 }
 
-function getStepContent(stepIndex) {
-  switch (stepIndex) {
-    case 0:
-      return "Ballots are open";
-    case 1:
-      return "is this the end of the votes";
-    case 2:
-      return "here is the winning association";
-      case 3:
-      return "etape n°4";
-      case 4:
-      return "etape n°5 ";
-    default:
-      return "Unknown stepIndex";
-  }
-}
 
-export default function AdminVoting() {
+
+function AdminVoting({ account, setMsg }) {
   const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(0);
+  const [activeStep, setActiveStep] = useState(0);
+  const [addr, setAddr] = useState(0);
+  const [description, setDescription] = useState(0);
+  const [winning, setWinning] = useState(0);
   const steps = getSteps();
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  useEffect(() => {
+  const getStep = async () => {
+    const contract = await getContract(Borrow);
+    const response = await contract.methods.status().call();
+    setActiveStep(Number(response));
+  }
+
+  getStep();
+}, []);
+  const next = async () => {
+    const contract = await getContract(Borrow);
+    const web3 = await getWeb3();
+    const toNextStep = await contract.methods
+    .nextStep()
+    .send({ from: account })
+    .on("error", function (error) {
+      setMsg("error");
+    })
+    .then(function (tx) {
+      setMsg(`passed to the next step`);
+      setActiveStep(activeStep + 1);
+    });
   };
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
+  const registeringVoters = async () => {
+    const contract = await getContract(Borrow);
+    const web3 = await getWeb3();
+    const voters = await contract.methods
+      .setEntity()
+      .send({ from: account})
+      .on("error", function (error) {
+        setMsg("error");
+      })
+      .then(function (tx) {
+        setMsg(`voters are registred`);
+        console.log(tx);
 
-  const handleReset = () => {
-    setActiveStep(0);
-  };
+      });
+    };
+
+    const registerProposal = async () => {
+      const contract = await getContract(Borrow);
+      const web3 = await getWeb3();
+      const voters = await contract.methods
+        .registerLoanRequest(description, addr)
+        .send({ from: account})
+        .on("error", function (error) {
+          setMsg("error");
+        })
+        .then(function (tx) {
+          setMsg(`proposal registered`);
+          console.log(tx);
+
+        });
+      };
+
+
+
+    const winningProposal = async() => {
+      const contract = await getContract(Borrow);
+      const web3 = await getWeb3();
+      const winning = await contract.methods
+        .getWinningProposal()
+        .send({ from: account })
+        .on("error", function (error) {
+          setMsg("error");
+        })
+        .then(function (tx) {
+          setMsg(`wining proposal setted`);
+          console.log(tx);
+
+        });
+
+      };
 
   return (
-    <Grid>
+    <Grid
+       direction="column"
+       container
+       spacing={3}
+       style={{ paddingTop: "20px"}}
+     >
+      <ThemeProvider theme={theme}>
       <Grid className="totalgrid">
-        <Grid item>
-          <a href="/uservoting">Go To Public Voting</a>
-          <br></br>
-          <a href="/admin">Go To AdminControle</a>
-        </Grid>
-        <div>
           <img className="imagesolipayadminvoting" src="solipay.png" />
-        </div>
-        <div className="voteadmintext">administration of Solipay voting </div>
-        <br></br>
       </Grid>
-
-      <div className="partibass">
-        <div className={classes.root}>
           <Stepper
             activeStep={activeStep}
             alternativeLabel
@@ -88,60 +166,66 @@ export default function AdminVoting() {
               </Step>
             ))}
           </Stepper>
-
-          <div className="startnewvote">
-            {activeStep === steps.length ? (
-              <div>
-                <Typography className={classes.instructions}>
-                  UNICEF A GAGNER
-                </Typography>
-                <Button onClick={handleReset}>start new votes</Button>
-              </div>
-            ) : (
-              <div className="millieu">
-                <Typography className={classes.instructions}>
-                  {getStepContent(activeStep)}
-                </Typography>
-                <div>
+          <Grid item>
                   <Button
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    className={classes.backButton}
-                  >
-                    back
-                  </Button>
-                  <Button 
                     variant="contained"
                     color="primary"
-                    onClick={handleNext}
+                    onClick={() => next()}
                   >
-                    {activeStep === steps.length - 1 ? "Finish" : "next steps"}
+                    NEXT
                   </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+          </Grid>
+          <Grid
+             direction="row"
+             container
+             spacing={3}
+             style={{ paddingTop: "20px", paddingLeft: "500px"}}
+           >
+           <Grid item>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => registeringVoters()}
+                  >
+                    SET VOTERS
+                  </Button>
+            </Grid>
+            <Grid item>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => winningProposal()}
+                  >
+                    winning proposal
+                  </Button>
+            </Grid>
+          </Grid>
 
+
+    <Grid item>
       <TextareaAutosize style={{backgroundColor:"white",borderRadius:"1%", width:"500px" ,height:"200px"}}
-    
         rowsMax={4}
         aria-label="maximum height"
-        placeholder="Maximum 8 rows"
-        defaultValue="enregister your proposal "
+        placeholder="register your proposal"
+        onChange={({ target }) => setDescription(target.value)}
       />
-       <br></br>
-      <span></span>
-      <br></br>
-    
-      <Button variant="contained" color="primary">
+    </Grid>
+    <Grid item>
+      <TextField
+        rowsMin={4}
+        id="standard-basic"
+        label="AdresseTokenB"
+        placeholder="Project Ethereum address..."
+        onChange={({ target }) => setAddr(target.value)}
+      />
+    </Grid>
+    <Grid item>
+      <Button variant="contained" color="primary" onClick={() => registerProposal()}>
         enregistrer la proposition{" "}
       </Button>
-<div style={{paddingBottom:80}}></div>
-     
+    </Grid>
+    </ThemeProvider>
     </Grid>
   );
 }
-
-// export default AdminVoting;
+export default AdminVoting;

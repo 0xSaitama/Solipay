@@ -26,7 +26,7 @@ contract Borrow is Ownable{
         bool isRegistered;
         bool hasVoted;
         uint votingPower;
-        uint proposalId;
+        uint16 proposalId;
     }
 
 
@@ -45,7 +45,7 @@ contract Borrow is Ownable{
     IProxy proxy;
     address public stacking;
     address public proxySimple;
-    uint winningProposalId;
+    uint16 winningProposalId;
     address receiverAddress;
 
 
@@ -61,10 +61,9 @@ contract Borrow is Ownable{
     event EntityRegistered(address[] soliAddress);
     event ProposalsRegistrationStarted();
     event ProposalsRegistrationEnded();
-    event ProposalRegistered(uint loanRequestId);
     event VotingSessionStarted();
     event VotingSessionEnded();
-    event Voted(address entity, uint loanRequestId);
+    event Voted(address entity, uint16 loanRequestId);
     event VotesTallied();
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
     event receiverAddressUpdated(address receiver);
@@ -90,11 +89,6 @@ contract Borrow is Ownable{
         require(status == WorkflowStatus.LoanRequestStarted, "Not allowed");
         LoanRequest memory loanR = LoanRequest(_description, 0, receiver);
         loans.push(loanR);
-        uint id = loans.length.sub(1);
-        emit ProposalRegistered(id);
-
-    //    uint proposalId = loans.length.sub(1);
-    //    borrowers[loanRequestId] = msg.sender;
     }
 
     /// @notice Records the addresses of participants
@@ -102,7 +96,7 @@ contract Borrow is Ownable{
     function setEntity() public onlyOwner {
       address[] memory copyTab = proxy.getAdrClients();
 
-        for(uint i; i < copyTab.length; i++) {
+        for(uint16 i; i < copyTab.length; i++) {
           address _address = copyTab[i];
            voters[_address] = Voter(true,false,proxy.getUserDeposits(copyTab[i]),0);
           }
@@ -114,7 +108,7 @@ contract Borrow is Ownable{
     /// @notice Function to vote, Id 0 for blank vote
     /// @dev For the moment we only vote once
     /// @param _proposalId Proxy address
-    function addVote(uint _proposalId) external isRegistred {
+    function addVote(uint16 _proposalId) external isRegistred {
         require(status == WorkflowStatus.VotingSessionStarted,"Not allowed");
         require(!voters[msg.sender].hasVoted, "Already voted");
 
@@ -151,11 +145,19 @@ contract Borrow is Ownable{
         emit VotesTallied();
     } */
 
-    function getWinningProposal() external onlyOwner returns (uint _proposalId) {
+    function getVotersPower(address voter) external view returns(uint votingPower) {
+       votingPower = voters[voter].votingPower;
+    }
+
+    function getVotersProp(address voter) external view returns(uint proposalId) {
+       proposalId = voters[voter].proposalId;
+    }
+
+    function getWinningProposal() external onlyOwner returns (uint16 _proposalId) {
         require(status == WorkflowStatus.VotingSessionEnded, "Not allowed");
             uint winnerVoteCount = 0;
             uint challenger = 0;
-            for (uint i; i < loans.length; i++) {
+            for (uint16 i; i < loans.length; i++) {
                 if (loans[i].voteCount > winnerVoteCount) {
                     winnerVoteCount = loans[i].voteCount;
                     _proposalId = i;
@@ -204,7 +206,7 @@ contract Borrow is Ownable{
         emit WorkflowStatusChange(previousStatus, status);
     }
 
-    function getWinningProposalId() external view returns(uint){
+    function getWinningProposalId() external view returns(uint16){
       return winningProposalId;
     }
 

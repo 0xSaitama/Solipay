@@ -89,7 +89,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const UserVoting = () => {
+function UserVoting({ account, setMsg }) {
   const classes = useStyles();
   const steps = [
   "Registering Voters",
@@ -102,6 +102,7 @@ const UserVoting = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [picture, setPicture] = useState(null);
   const [value, setValue] = useState(0);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
   const getStep = async () => {
@@ -111,13 +112,71 @@ const UserVoting = () => {
   }
 
   getStep();
+  getVoters();
 }, []);
 
-  // proposer une association
-  const handlePicture = (e) => {
-    setPicture(URL.createObjectURL(e.target.files[0]));
-    console.log(picture);
-  };
+function getStepContent(stepIndex) {
+switch (stepIndex) {
+  case 0:
+    return "Solipay is currently registering voters";
+  case 1:
+    return "Solipay is currently registering project proposals";
+  case 2:
+    return "Solipay is currently setting the voting session";
+  case 3:
+    return "Voting session is live now, vote for the project of your choice";
+  case 4:
+    return "Solipay is currently tailing votes";
+  case 5:
+    return "Here there is the new project to fund";
+  default:
+    return "Unknown stepIndex";
+  }
+}
+
+const getVoters =  async() => {
+    const contract = await getContract(Borrow);
+    const web3 = await getWeb3();
+    const entities = await contract
+    .getPastEvents
+    ("EntityRegistered",
+    {fromBlock: '24637147',
+    toBlock: 'latest'});
+    const voters = entities[0].returnValues.soliAddress;
+    const votersInfo = [];
+    for (let i = 0; i < voters.length; i++) {
+      let votingPower = await contract.methods.getVotersPower(voters[i]).call();
+      votingPower = web3.utils.fromWei(votingPower, "ether");
+      console.log(votingPower);
+      let id = await contract.methods.getVotersProp(voters[i]).call();
+      votersInfo.push({
+        voter: voters[i],
+        power: votingPower,
+        proposal: id,
+      })
+    }
+    setTimeout(() => {
+      setUsers(votersInfo);
+    }, 1000)
+
+
+    setUsers(voters);
+
+    };
+
+const vote = async(Id) => {
+  const contract = await getContract(Borrow);
+  const web3 = await getWeb3();
+  const voted = await contract.methods
+  .addVote(Id)
+  .send({ from: account })
+  .on("error", function (error) {
+    setMsg("error");
+  })
+  .then(function (tx) {
+    setMsg(`Vote Cast !`);
+  });
+};
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -147,6 +206,8 @@ const UserVoting = () => {
             </Step>
           ))}
         </Stepper>
+        <br></br>
+      <h4 className="homeText">{getStepContent(activeStep)}</h4>
       </Grid>
       </ThemeProvider>
     <Grid item>
@@ -162,9 +223,9 @@ const UserVoting = () => {
               variant="fullWidth"
               aria-label="full width tabs example"
             >
-              <Tab label="UNICEF" {...a11yProps(0)} />
-              <Tab label="AMNESTY" {...a11yProps(1)} />
-              <Tab label="GREENPEACE" {...a11yProps(2)} />
+              <Tab label="1.UNICEF" {...a11yProps(0)} />
+              <Tab label="2.AMNESTY" {...a11yProps(1)} />
+              <Tab label="3.GREENPEACE" {...a11yProps(2)} />
             </Tabs>
           </AppBar>
           <SwipeableViews
@@ -197,7 +258,7 @@ const UserVoting = () => {
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
-                  <Button size="large" color="primary" disabled={activeStep !== 3}>
+                  <Button size="large" color="primary" disabled={activeStep !== 3} onClick={() => vote(1)}>
                     VOTE
                   </Button>
                   <Button size="large" color="secondary" href="https://www.msf.fr/decouvrir-msf/qui-sommes-nous">
@@ -233,7 +294,7 @@ const UserVoting = () => {
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
-                  <Button size="large" color="primary" disabled={activeStep !== 3}>
+                  <Button size="large" color="primary" disabled={activeStep !== 3} onClick={() => vote(2)}>
                     VOTE
                   </Button>
                   <Button size="large" color="secondary" href="https://www.amnesty.org/en/what-we-do/">
@@ -269,7 +330,7 @@ const UserVoting = () => {
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
-                  <Button size="large" color="primary" disabled={activeStep !== 3}>
+                  <Button size="large" color="primary" disabled={activeStep !== 3} onClick={() => vote(3)}>
                     VOTE
                   </Button>
                   <Button size="large" color="secondary" href="https://www.greenpeace.org/international/explore/about/about-us/">
@@ -282,54 +343,22 @@ const UserVoting = () => {
         </div>
     </ThemeProvider>
     </Grid>
-    </Grid>
-    <Grid item>
-      <Grid className="center">
-          <Card className={classes.root}>
-              <CardActionArea>
-                <CardMedia
-                  className={classes.media}
-                  image={picture}
-                  title="Asssociation 1"
-                >
-                </CardMedia>
-                    <input
-                      type="file"
-                      name="file"
-                      onChange={(e) => handlePicture(e)}
-                    />
-
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    Description de l'association
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    component="p"
-                    CHIEN
-                  >
-                    <TextareaAutosize
-                      style={{ width: "300px", height: "300px" }}
-                      placeholder="Detailler l'association que vous voudriez promouvoir  "
-                    ></TextareaAutosize>
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-              <CardActions>
-                <Button size="small" color="primary">
-                  Send my proposal
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        </Grid>
-
   </Grid>
+  <Grid item>
+      <Grid className="cardContentCentered">
+        Voters List
+        <ul>
+          {users.map(users =>
+          <li key="{users}"> Address {users.voter} Voting Power {users.power} Voted {users.proposal}</li>
+          )}
+        </ul>
+      </Grid>
+  </Grid>
+</Grid>
 
 
 
   );
-};
+}
 
 export default UserVoting;
